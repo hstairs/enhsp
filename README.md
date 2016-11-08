@@ -52,7 +52,7 @@ They are all open source projects, so is this library. For your convenience, *th
 
 ## Compilation, Running and Execution
 
-To compile the software just go to the root folder and run `compile`; then you need to run the `install` script, which basically creates another script for the running, i.e., `enhsp`. You can link the file from your usr/lib folder, so use the planner from wherever you want.
+To compile the software just go to the root folder and run `compile`; then you need to run the `install` script, which basically creates another script for the running, i.e., `enhsp` (the file needs to be given execution permissions via `chmod +x ./enhsp`). You can link the file from your usr/lib folder, so use the planner from wherever you want.
 
 The compilation and running scripts have been written for a Linux based system (i.e., Ubuntu 16.04 works well with them), but I think you can have a similar version for any other system (e.g., Windows or MAC). As long as you provide your OS with a java runtime environment.
 

@@ -93,10 +93,11 @@ The instances used for ECAI 2016 are in the ecai16_benchmarks folder. The planne
 
 In the folder you can find also two files of the results collected, which slightly differs (from a merely quantitatively standpoint) from the one presented in the paper.
 
-#Limitation
+#Limitation and Known Caveats
 
 The planner is an experimental tool developed as a proof of concepts to verify empirically some of the results obtained during our research activities. This means that there could be bugs, or things that need better optimisation, refinement so on and so forth. If you use the planner, *please let me know*! I am gonna also start to collect all the known issues in the following list:
 
 1. No support for conditional effects, quantification over objects
 2. The 'ssnp_sat' and 'ssrnp_sat' version do not accept negative precondition. You can compile them away but it would be nice to have native support for them
-3. ...
+3. The effect set is assumed to be given always as an AND condition, even when there is just a single effect. So if you have one single effect e_1, you can obtain an equivalent formulation by writing (and e_1) 
+4. ...

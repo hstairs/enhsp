@@ -4,9 +4,11 @@ if [ "$#" = 0 ]; then
     echo "#!/bin/bash 
 
     java -classpath "$(pwd)"/src/:"$(pwd)"/libs/PPMaJal2.jar:"$(pwd)"/libs/* ENHSP \"\$@\"" > enhsp
+    chmod +x enhsp
 else
     echo "#!/bin/bash 
 
     java "$1 $2" -classpath "$(pwd)"/src/:"$(pwd)"/libs/PPMaJal2.jar:"$(pwd)"/libs/* ENHSP \"\$@\"" > enhsp
+    chmod +x enhsp
 fi
 

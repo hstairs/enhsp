@@ -62,7 +62,7 @@ public class ENHSP {
     private static boolean max_red_constraint = false;
     private static boolean saving_json = false;
     private static String delta_t;
-    private static String horizon;
+    private static String depth_limit;
     private static float resolution_execution;
     private static boolean save_plan;
     private static Boolean admissible;
@@ -95,7 +95,7 @@ public class ENHSP {
                 + "\n             -gw <float> (weight for the g-values, overrides previous setting)"
                 + "\n             -hw <float> (weight for the h-values, overrides previous setting)"
                 + "\n             -h <integer/string> select heuristic to be used. Look into the code for more information."
-                + "\n             -horizon <integer> (depth of the search tree)"
+                + "\n             -depth_limit <integer> (depth of the search tree)"
                 + "\n             -break_ties larger_g, smaller_g (default: Arbitrary)"
                 + "\n             -adm (Admissible setting; default no)"
                 + "\n\n Other ones:"
@@ -114,7 +114,7 @@ public class ENHSP {
             hw = Utils.searchParameterValue(args, "-hw");
             gw = Utils.searchParameterValue(args, "-gw");
             delta_t = Utils.searchParameterValue(args, "-delta");
-            horizon = Utils.searchParameterValue(args, "-horizon");
+            depth_limit = Utils.searchParameterValue(args, "-depth_limit");
             heuristic = Utils.searchParameterValue(args, "-h");
             dec_heuristic = Utils.searchParameter(args, "-dec"); //only decreasing values of heuristic
             greedy_bf = Utils.searchParameter(args, "-gbf"); //greedy bellman ford -- obsolete
@@ -416,11 +416,11 @@ public class ENHSP {
 
             }
 
-            if (horizon != null) {
-                searchStrategies.horizon = Integer.parseInt(horizon);
-                System.out.println("Setting horizon to:" + horizon);
+            if (depth_limit != null) {
+                searchStrategies.depth_limit = Integer.parseInt(depth_limit);
+                System.out.println("Setting depth_limit to:" + depth_limit);
             } else {
-                searchStrategies.horizon = Integer.MAX_VALUE;
+                searchStrategies.depth_limit = Integer.MAX_VALUE;
             }
 
             if ("hc".equals(search_engine)) {
@@ -471,7 +471,7 @@ public class ENHSP {
             if (print_trace) {
                 FileWriter file = null;
                 try {
-                    file = new FileWriter(problem.getPddlFileReference() +"".npt");
+                    file = new FileWriter(problem.getPddlFileReference() +".npt");
                     file.write(sp.numeric_plan_trace.toJSONString());
                     file.close();
                 } catch (IOException ex) {
@@ -480,7 +480,7 @@ public class ENHSP {
                 System.out.println("Numeric Plan Trace saved.");
             }
             if (save_plan) {
-                sp.savePlan(problem.getPddlFileReference() + "".plan", true);
+                sp.savePlan(problem.getPddlFileReference() + ".plan", true);
             }
             if (problem.getMetric() != null && problem.getMetric().getMetExpr() != null) {
                 System.out.println("Metric-Value:" + problem.getMetric().getMetExpr().eval(last_state));

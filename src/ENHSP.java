@@ -99,7 +99,7 @@ public class ENHSP {
                 + "\n             -break_ties larger_g, smaller_g (default: Arbitrary)"
                 + "\n             -adm (Admissible setting; default no)"
                 + "\n\n Other ones:"
-                + "\n             -sjr (activate search tree saving in jason file)"
+                + "\n             -sjr (activate search tree saving in json file)"
                 + "\n             -sp  (save plan in a PDDL+ style)";
 
         if (args.length < 4) {
@@ -156,6 +156,7 @@ public class ENHSP {
     public static void main(String[] args) throws Exception {
 
         parseInput(args);
+        long very_start = System.currentTimeMillis();
         PddlDomain domain = new PddlDomain(domainFile);
         System.out.println("Domain Parsed");
         final EPddlProblem problem = new EPddlProblem(problemFile, domain.getConstants());
@@ -191,8 +192,6 @@ public class ENHSP {
         problem.generateConstraints();
         problem.transform_numeric_condition();
         
-//        System.out.println("DEBUG:Ground Processes:"+problem.processesSet);
-//        System.out.println(problem.globalConstraints.pddlPrint(true));
         System.out.println("Grounding and Simplification finished");
         System.out.println("|A|:" + problem.getActions().size());
         System.out.println("|P|:" + problem.processesSet.size());
@@ -353,6 +352,7 @@ public class ENHSP {
                     h.additive_h = false;
                     break;
                 }
+
                 case "aibr2": {
                     searchStrategies.setup_heuristic(new Aibr(problem.getGoals(), problem.getActions(), problem.processesSet));
                     Aibr h = (Aibr) searchStrategies.getHeuristic();
@@ -410,7 +410,7 @@ public class ENHSP {
             }
             if (gw != null) {
                 searchStrategies.set_w_g(Float.parseFloat(gw));
-                System.out.println("w_g set to be " + gw);
+                System.out.println("g_h set to be " + gw);
             } else {
                 searchStrategies.set_w_g(1);
 
@@ -418,7 +418,7 @@ public class ENHSP {
 
             if (depth_limit != null) {
                 searchStrategies.depth_limit = Integer.parseInt(depth_limit);
-                System.out.println("Setting depth_limit to:" + depth_limit);
+                System.out.println("Setting horizon to:" + depth_limit);
             } else {
                 searchStrategies.depth_limit = Integer.MAX_VALUE;
             }
@@ -471,7 +471,8 @@ public class ENHSP {
             if (print_trace) {
                 FileWriter file = null;
                 try {
-                    file = new FileWriter(problem.getPddlFileReference() +".npt");
+                    file = new FileWriter(problem.getPddlFileReference() +"_search_"+search_engine+"_h_"+heuristic+"_break_ties_"+break_ties+ ".npt");
+                    //System.out.println(this.json_rep.toJSONString());
                     file.write(sp.numeric_plan_trace.toJSONString());
                     file.close();
                 } catch (IOException ex) {
@@ -480,7 +481,7 @@ public class ENHSP {
                 System.out.println("Numeric Plan Trace saved.");
             }
             if (save_plan) {
-                sp.savePlan(problem.getPddlFileReference() + ".plan", true);
+                sp.savePlan(problem.getPddlFileReference() + "_c_" + heuristic + "_gw_" + gw + "_hw_" + gw + "_delta_" + delta_t + ".plan", true);
             }
             if (problem.getMetric() != null && problem.getMetric().getMetExpr() != null) {
                 System.out.println("Metric-Value:" + problem.getMetric().getMetExpr().eval(last_state));
@@ -491,7 +492,9 @@ public class ENHSP {
         }
 
         System.out.println("Heuristic Time:" + SearchStrategies.heuristic_time);
-        System.out.println("Planning Time:" + SearchStrategies.overall_search_time);
+        System.out.println("Planning Time:" + (System.currentTimeMillis()-very_start));
+        System.out.println("Search Time:" + SearchStrategies.overall_search_time);
+
         System.out.println("Expanded Nodes:" + SearchStrategies.nodes_expanded);
         System.out.println("States Evaluated:" + SearchStrategies.states_evaluated);
         if (last_state != null)

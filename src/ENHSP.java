@@ -20,19 +20,15 @@ import domain.PddlDomain;
 import heuristics.Aibr;
 import heuristics.Aibr_rp;
 import heuristics.advanced.h1;
+import heuristics.advanced.habs_add;
+import heuristics.advanced.habs_max;
 import heuristics.advanced.hlm;
-import heuristics.advanced.hlm_refactored;
 import heuristics.advanced.quasi_hm;
 import heuristics.blind_heuristic;
-import heuristics.old.Uniform_cost_search_H1;
-import heuristics.old.Uniform_cost_search_H1_RC;
-import heuristics.old.landmarks_factory;
+
 import org.apache.commons.cli.*;
 import plan.SimplePlan;
-import problem.EPddlProblem;
-import problem.GroundAction;
-import problem.GroundProcess;
-import problem.State;
+
 import search.SearchNode;
 import search.SearchStrategies;
 
@@ -42,6 +38,10 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import problem.EPddlProblem;
+import problem.GroundProcess;
+import problem.PDDLGroundAction;
+import problem.PDDLState;
 
 public class ENHSP {
 
@@ -68,6 +68,7 @@ public class ENHSP {
     private static boolean eco_saving_json;
     private static boolean hh_pruning;
     private static boolean ignore_metric;
+    private static Integer num_of_subdomains;
 
 
     public static void main(String[] args) throws Exception {
@@ -84,14 +85,14 @@ public class ENHSP {
 
         System.out.println("Domain parsed");
 
-        final EPddlProblem problem = new EPddlProblem(problemFile, domain.getConstants());
+        final EPddlProblem problem = new EPddlProblem(problemFile, domain.getConstants(),domain.types);
 
         //this second model is the one used in the heuristic. This can potentially be different from the one used in the execution model. Decoupling it 
         //allows us to a have a finer control on the machine
-        final EPddlProblem heuristic_model = new EPddlProblem(problemFile, domain_heuristic.getConstants());
+        final EPddlProblem heuristic_model = new EPddlProblem(problemFile, domain_heuristic.getConstants(),domain.getTypes());
 
         //the third one is the validation model, where, also in this case we test our plan against a potentially more accurate description
-        final EPddlProblem validation_problem = new EPddlProblem(problemFile, domain.getConstants());
+        final EPddlProblem validation_problem = new EPddlProblem(problemFile, domain.getConstants(),domain.getTypes());
 
         System.out.println("Problem parsed");
         domain.validate(problem);
@@ -121,7 +122,7 @@ public class ENHSP {
             }
         });
         LinkedList raw_plan = null;//raw list of actions returned by the search strategies
-        if (!domain.getProcessesSchema().isEmpty() || !domain.getEventSchema().isEmpty()) {
+        if (!domain.getProcessesSchema().isEmpty() || !domain.eventsSchema.isEmpty()) {
             //this is when you have processes
             problem.setDeltaTimeVariable(delta_t);
             heuristic_model.setDeltaTimeVariable(delta_t_h);
@@ -135,7 +136,7 @@ public class ENHSP {
             searchStrategies.delta_max = Float.parseFloat(delta_max);
         } else {//this is when you have processes
         }
-        State last_state = null;
+        PDDLState last_state = null;
 //      problem.grounding_reachability();
 
         System.out.println("Simplification..");
@@ -151,7 +152,7 @@ public class ENHSP {
             }
 
             System.out.println("Exec Model: Grounded Actions Representation:" + problem.processesSet);
-            for (GroundAction p : (Collection<GroundAction>) problem.getActions()) {
+            for (PDDLGroundAction p : (Collection<PDDLGroundAction>) problem.getActions()) {
                 System.out.println(p.toPDDL());
                 System.out.println(p.getAction_cost());
             }
@@ -320,21 +321,7 @@ public class ENHSP {
 
         //next is highly customized configuration
         switch (heuristic) {
-            case "hadd2": {
-                searchStrategies.setup_heuristic(new Uniform_cost_search_H1(heuristic_model.getGoals(), heuristic_model.getActions(), heuristic_model.processesSet, heuristic_model.eventsSet));
-                Uniform_cost_search_H1 h = (Uniform_cost_search_H1) searchStrategies.getHeuristic();
-                h.additive_h = true;
-                break;
-            }
-            case "hrmaxold": {
-                searchStrategies.setup_heuristic(new Uniform_cost_search_H1_RC(heuristic_model.getGoals(), heuristic_model.getActions(), heuristic_model.processesSet));
-                Uniform_cost_search_H1 h = (Uniform_cost_search_H1_RC) searchStrategies.getHeuristic();
-                h.additive_h = false;
-                h.integer_actions = false;
-                h.integer_variables = false;
-
-                break;
-            }
+           
             case "hadd": {
                 searchStrategies.setup_heuristic(new h1(heuristic_model.getGoals(), heuristic_model.getActions(), heuristic_model.processesSet, heuristic_model.eventsSet));
                 h1 h = (h1) searchStrategies.getHeuristic();
@@ -443,7 +430,6 @@ public class ENHSP {
                 h.conservativehmax = true;//this corresponds to ijcai-16 version
                 break;
             }
-
             case "hmax": {
                 searchStrategies.setup_heuristic(new h1(heuristic_model.getGoals(), heuristic_model.getActions(), heuristic_model.processesSet, heuristic_model.eventsSet));
                 h1 h = (h1) searchStrategies.getHeuristic();
@@ -507,67 +493,106 @@ public class ENHSP {
                 h.greedy = true;
                 break;
             }
-            case "lm_facts": {
-                searchStrategies.setup_heuristic(new landmarks_factory(heuristic_model.getGoals(), heuristic_model.getActions()));
-                break;
-            }
-            case "lm_actions_old": {
-                searchStrategies.setup_heuristic(new hlm(heuristic_model.getGoals(), heuristic_model.getActions(), heuristic_model.processesSet, heuristic_model.eventsSet));
-                hlm lm = (hlm) searchStrategies.getHeuristic();
-                lm.compute_lp = true;
-                break;
-            }
-            case "lm_actions_rc_old": {
-                searchStrategies.setup_heuristic(new hlm(heuristic_model.getGoals(), heuristic_model.getActions(), heuristic_model.processesSet, heuristic_model.eventsSet));
-                hlm lm = (hlm) searchStrategies.getHeuristic();
-                lm.red_constraints = true;
-                lm.compute_lp = true;
-                break;
-            }
+
             case "lm_actions": {
-                searchStrategies.setup_heuristic(new hlm_refactored(heuristic_model.getGoals(), heuristic_model.getActions(), heuristic_model.processesSet, heuristic_model.eventsSet));
-                hlm_refactored lm = (hlm_refactored) searchStrategies.getHeuristic();
+                searchStrategies.setup_heuristic(new hlm(heuristic_model.getGoals(), heuristic_model.getActions(), heuristic_model.processesSet, heuristic_model.eventsSet));
+                hlm lm = (hlm) searchStrategies.getHeuristic();
                 lm.lp_cost_partinioning = true;
                 break;
             }
             case "lm_actions_rc": {
-                searchStrategies.setup_heuristic(new hlm_refactored(heuristic_model.getGoals(), heuristic_model.getActions(), heuristic_model.processesSet, heuristic_model.eventsSet));
-                hlm_refactored lm = (hlm_refactored) searchStrategies.getHeuristic();
+
+                searchStrategies.setup_heuristic(new hlm(heuristic_model.getGoals(), heuristic_model.getActions(), heuristic_model.processesSet, heuristic_model.eventsSet));
+                hlm lm = (hlm) searchStrategies.getHeuristic();
                 lm.red_constraints = true;
                 lm.lp_cost_partinioning = true;
                 break;
             }
-            case "lm_actions_rc_mip": {
+            
+            case "lm_actions_dc": {
                 searchStrategies.setup_heuristic(new hlm(heuristic_model.getGoals(), heuristic_model.getActions(), heuristic_model.processesSet, heuristic_model.eventsSet));
                 hlm lm = (hlm) searchStrategies.getHeuristic();
-                lm.red_constraints = true;
-                lm.compute_lp = true;
-                lm.mip = true;
-
-                break;
-            }
-            case "lm_actions_dc": {
-                searchStrategies.setup_heuristic(new hlm_refactored(heuristic_model.getGoals(), heuristic_model.getActions(), heuristic_model.processesSet, heuristic_model.eventsSet));
-                hlm_refactored lm = (hlm_refactored) searchStrategies.getHeuristic();
                 lm.smart_intersection = true;
                 lm.lp_cost_partinioning = true;
                 break;
             }
             case "lm_actions_rc_dc": {
-                searchStrategies.setup_heuristic(new hlm_refactored(heuristic_model.getGoals(), heuristic_model.getActions(), heuristic_model.processesSet));
-                hlm_refactored lm = (hlm_refactored) searchStrategies.getHeuristic();
+                searchStrategies.setup_heuristic(new hlm(heuristic_model.getGoals(), heuristic_model.getActions(), heuristic_model.processesSet));
+                hlm lm = (hlm) searchStrategies.getHeuristic();
                 lm.smart_intersection = true;
                 lm.red_constraints = true;
                 lm.lp_cost_partinioning = true;
                 break;
             }
             case "lm_actions_mip": {
-                searchStrategies.setup_heuristic(new hlm_refactored(heuristic_model.getGoals(), heuristic_model.getActions(), heuristic_model.processesSet));
-                hlm_refactored lm = (hlm_refactored) searchStrategies.getHeuristic();
+                searchStrategies.setup_heuristic(new hlm(heuristic_model.getGoals(), heuristic_model.getActions(), heuristic_model.processesSet));
+                hlm lm = (hlm) searchStrategies.getHeuristic();
                 lm.mip = true;
                 lm.lp_cost_partinioning = true;
                 break;
             }
+            case "haddabs": {
+                searchStrategies.setup_heuristic(new habs_add(heuristic_model.getGoals(), heuristic_model.getActions(),heuristic_model.processesSet,heuristic_model.eventsSet, Integer.MAX_VALUE));
+                habs_add h = (habs_add) searchStrategies.getHeuristic();
+                h.setMetric(heuristic_model.getMetric());
+                h.additive_h = true;
+                h.midPointSampling = true;
+                
+                break;
+            }
+
+            case "haddabs2": {
+                searchStrategies.setup_heuristic(new habs_add(heuristic_model.getGoals(), heuristic_model.getActions(), 2));
+                habs_add h = (habs_add) searchStrategies.getHeuristic();
+                h.setMetric(heuristic_model.getMetric());
+                h.additive_h = true;
+                
+                break;
+            }
+            case "haddabsk": {
+                searchStrategies.setup_heuristic(new habs_add(heuristic_model.getGoals(), heuristic_model.getActions(), num_of_subdomains));
+                habs_add h = (habs_add) searchStrategies.getHeuristic();
+                h.setMetric(heuristic_model.getMetric());
+                h.additive_h = true;
+                
+                break;
+            }
+            case "haddabsonline": {
+                searchStrategies.setup_heuristic(new habs_add(heuristic_model.getGoals(), heuristic_model.getActions(), num_of_subdomains));
+                habs_add h = (habs_add) searchStrategies.getHeuristic();
+                h.setMetric(heuristic_model.getMetric());
+                h.additive_h = true;
+                h.onlineRepresentatives = true;
+                
+                
+                break;
+            } 
+            case "haddabsmidpoint": {
+                searchStrategies.setup_heuristic(new habs_add(heuristic_model.getGoals(), heuristic_model.getActions(), Integer.MAX_VALUE));
+                habs_add h = (habs_add) searchStrategies.getHeuristic();
+                h.setMetric(heuristic_model.getMetric());
+                h.additive_h = true;
+                h.midPointSampling = true;
+                
+                break;
+            }
+            case "haddabsmidkpoint": {
+                searchStrategies.setup_heuristic(new habs_add(heuristic_model.getGoals(), heuristic_model.getActions(), num_of_subdomains));
+                habs_add h = (habs_add) searchStrategies.getHeuristic();
+                h.setMetric(heuristic_model.getMetric());
+                h.additive_h = true;
+                h.midPointSampling = true;
+                
+                break;
+            }
+            
+            case "hmaxabs": {
+                searchStrategies.setup_heuristic(new habs_max(heuristic_model.getGoals(), heuristic_model.getActions(), heuristic_model.processesSet));
+                habs_max h = (habs_max) searchStrategies.getHeuristic();
+                h.setMetric(heuristic_model.getMetric());
+                break;
+            }
+            
             case "blind": {
                 searchStrategies.setup_heuristic(new blind_heuristic(heuristic_model.getGoals(), heuristic_model.getActions(), heuristic_model.processesSet, heuristic_model.eventsSet));
                 break;
@@ -626,6 +651,7 @@ public class ENHSP {
 
         if ("ehc".equals(search_engine)) {
             System.out.println("Running Enforced Hill Climbing (BFS)");
+            searchStrategies.forgetting_ehc = false;
             raw_plan = searchStrategies.enforced_hill_climbing(problem);
         } else if ("ehc_ha".equals(search_engine)) {
             System.out.println("Running Enforced Hill Climbing (BFS) with Helpful Actions");
@@ -698,7 +724,7 @@ public class ENHSP {
                 validation_problem.grounding_action_processes_constraints();
                 validation_problem.simplifications_action_processes_constraints();
                 last_state = sp.execute(validation_problem.getInit(), validation_problem.globalConstraints, validation_problem.processesSet, validation_problem.eventsSet, searchStrategies.delta_max, Float.parseFloat(delta_val), time);
-//                System.out.println("Last State:"+last_state.pddlPrint());
+//                System.out.println("Last PDDLState:"+last_state.pddlPrint());
                 boolean goal_reached = last_state.satisfy(problem.getGoals());
                 System.out.println("(Pddl+ semantics) Plan is valid:" + goal_reached);
                 if (!goal_reached && debug > 3) {
@@ -738,7 +764,7 @@ public class ENHSP {
         System.out.println("States Evaluated:" + SearchStrategies.states_evaluated);
         if (last_state != null) {
             if (debug > 0) {
-                System.out.println("Last State:" + last_state);
+                System.out.println("Last PDDLState:" + last_state);
             }
             if (last_state.getTime() == null) {
                 System.out.println("Duration:" + sp.size());
@@ -804,6 +830,7 @@ public class ENHSP {
         options.addOption("pt", false, "print state trajectory (Experimental)");
         options.addOption("im", false, "Ignore Metric in the heuristic");
         options.addOption("dl", true, "bound on plan-cost: float (Experimental)");
+        options.addOption("k", true, "maximal number of subdomains: integer");
 
         CommandLineParser parser = new DefaultParser();
         try {
@@ -844,6 +871,13 @@ public class ENHSP {
                 debug = Integer.parseInt(deb);
             else
                 debug = 0;
+            
+            String k = cmd.getOptionValue("k");
+            if (k != null){
+                num_of_subdomains = Integer.parseInt(k);
+            } else {
+                num_of_subdomains = 2;
+            }
 
 
 

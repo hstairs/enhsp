@@ -37,6 +37,8 @@ E. Scala, P. Haslum, D. Magazzeni, S. Thiebaux: **Landmarks for Numeric Planning
 
 M. Ramirez, E. Scala, P. Haslum, S. Thiebaux: **Numerical Integration and Dynamic Discretization in Heuristic Search Planning over Hybrid Domains** in arXiv
 
+D. Li, E. Scala, P. Haslum, S. Bogomolov **Effect-Abstraction Based Relaxation for Linear Numeric Planning** In IJCAI 2018
+
 The planner builds on the PPMaJaL library, which can be found [here](https://bitbucket.org/enricode/ppmajal-expressive-pddl-java-library/admin). PPMaJaL provides parsing, data structures, heuristics and search engine for ENHSP.
 
 ## Dependencies
@@ -83,6 +85,8 @@ domain_file and problem_file are the PDDL input files.
 
 - lm_opt is the planner with landmarks extraction and LP solving for the cost-partitioning problem. For this configuration you need to have CPLEX 12.6.3. Since CPLEX is a commercial product you need to have a licence for it (you can get a free academic licence), and link it by putting the cplex.jar library in the libs folder.
 
+- if the planner is used with -s gbfs -ties smaller_g and -h haddabs, the version obtained is equivalent to that used for the IJCAI-18 paper
+
 The planner can be also run using highly customized settings and other configurations not reported here. Using these configurations you can obtain more experimental versions of the planner, some of which are still not published; so use them with care. It may be useful to do so if your problem exhibits particular structures. As an example, when dealing with autonomous processes, ENHSP allows to decouple the delta to be used at execution level, heuristic level and validation level. 
 
 To set these deltas as well as the other parameters (helpful actions, plan extraction so on and so forth), see the help running enhsp without any parameters
@@ -110,11 +114,17 @@ In the folder you find two files of the results collected, which slightly differ
 
 ##Ijcai 2017
 
-The instances used for IJCAI 2017 are in the ecai17_benchmarks folder. The planner used for those instances is:
+The instances used for IJCAI 2017 are in the ijcai17_benchmarks folder. The planner used for those instances is:
 
 - 'lm_opt' which is A^* and the numeric admissibile h_{max} heuristic using also redundant constraints
 
 The version with landmarks and no redundant constraints can be obtained using a combination of A^*, lm_actions for the heuristic and tie-breaking with larger g-values.
+
+##Ijcai 2018
+
+The instances used for IJCAI 2018 are in the ijcai18_benchmarks folder. The planner used for those instances can be obtained running:
+
+- s gbfs -ties smaller_g and -h haddabs
 
 
 #Limitation and Known Caveats

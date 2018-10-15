@@ -91,6 +91,11 @@ The planner can be also run using highly customized settings and other configura
 
 To set these deltas as well as the other parameters (helpful actions, plan extraction so on and so forth), see the help running enhsp without any parameters
 
+It also seems that for some versions of Ubuntu it is required to set the JAVA encoding through the command:
+```
+"export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8" 
+```
+
 # Examples
 
 In the repository you will find examples on the types of problems that can be dealt with.

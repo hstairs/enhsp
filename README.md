@@ -137,4 +137,4 @@ The instances used for IJCAI 2018 are in the ijcai18_benchmarks folder. The plan
 The planner is an experimental tool developed as a proof of concepts to verify empirically some of the results obtained during our research activities. This means that there could be bugs, or things that need better optimisation, refinement so on and so forth. If you use the planner, *please let me know*! I am gonna also start to collect all the known issues in the following list:
 
 1. General formulas in action preconditions, constraints and goals can be used only with the AIBR heuristic and the heuristic based on subgoaling (hadd, hmax). They are first translated in NNF and then supported natively in the heuristics. Other heuristics (e.g., lm_actions) don't support negative conditions and disjunctions.
-2. ..
+2. *IMPORTANT*. As the grammar used in ENHSP to parse the PDDL file can read temporally qualified domains with timed initial literals and durative actions, in the PDDL input it is not possible to use predicates with keywords such as 'at' or 'start'.

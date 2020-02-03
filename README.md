@@ -39,7 +39,7 @@ M. Ramirez, E. Scala, P. Haslum, S. Thiebaux: **Numerical Integration and Dynami
 
 D. Li, E. Scala, P. Haslum, S. Bogomolov **Effect-Abstraction Based Relaxation for Linear Numeric Planning** In IJCAI 2018
 
-The planner builds on the PPMaJaL library, which can be found [here](https://bitbucket.org/enricode/ppmajal-expressive-pddl-java-library/admin). PPMaJaL provides parsing, data structures, heuristics and search engine for ENHSP.
+The planner builds on the PPMaJaL library, which can be found [here](https://gitlab.com/enricos83/PPMAJAL-Expressive-PDDL-Java-Library). PPMaJaL provides parsing, data structures, heuristics and search engine for ENHSP.
 
 ## Dependencies
 

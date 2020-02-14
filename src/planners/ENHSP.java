@@ -329,32 +329,6 @@ public class ENHSP {
 
     private void simplifyModels() throws Exception {
         System.out.println("Light Validation Completed");
-
-        if (debug == 11) {
-            System.out.println("Before Reachability: " + getProblem().actions);
-        }
-        System.out.println("Simplification..");
-        problem.setAction_cost_from_metric(!ignore_metric);
-        getProblem().simplifyAndSetupInit(true, aibrPreprocessing);
-        if (copyOfTheProblem) {
-            heuristicProblem.setAction_cost_from_metric(!ignore_metric);
-            heuristicProblem.simplifyAndSetupInit();
-        }
-
-        System.out.println("Grounding and Simplification finished");
-        System.out.println("|A|:" + getProblem().getActions().size());
-        System.out.println("|P|:" + getProblem().getProcessesSet().size());
-        System.out.println("|E|:" + getProblem().getEventsSet().size());
-        System.out.println("Size(X):" + problem.getNumberOfNumericVariables());
-        System.out.println("Size(F):" + problem.getNumberOfBooleanVariables());
-        if (pddlPlus){
-            System.out.println("Delta time heuristic model:" + delta_t_h);
-            System.out.println("Delta time planning model:" + delta_max);
-            System.out.println("Delta time search-execution model:" + delta_t);
-            System.out.println("Delta time validation model:" + delta_val);
-        }
-//        System.out.println(problem.getActions());
-//        Set<String> subgoaling_based_heuristic = new HashSet<String>(Arrays.asList("h1","hmax_ref","h1_ref", "h1_5","h1i","lm_actions","hmax","hmmax","h1gi","lm_actions_rc","lm_actions_dc","lm_actions_rc_dc","hm_max","hm_add","hmaxnr"));
         if (planner != null) {
             switch (planner) {
                 case "sat-hadd"://this is the version used for ijcai-16
@@ -398,6 +372,7 @@ public class ENHSP {
                 case "opt-blind":
                     System.out.println("A* with 0-1 goal heuristic");
                     heuristic = "blind";
+                    aibrPreprocessing = false;
                     gw = "1";
                     hw = "1";
                     break_ties = "larger_g";
@@ -425,6 +400,32 @@ public class ENHSP {
                     break;
             }
         }
+
+        if (debug == 11) {
+            System.out.println("Before Reachability: " + getProblem().actions);
+        }
+        System.out.println("Simplification..");
+        problem.setAction_cost_from_metric(!ignore_metric);
+        getProblem().simplifyAndSetupInit(true, aibrPreprocessing);
+        if (copyOfTheProblem) {
+            heuristicProblem.setAction_cost_from_metric(!ignore_metric);
+            heuristicProblem.simplifyAndSetupInit();
+        }
+
+        System.out.println("Grounding and Simplification finished");
+        System.out.println("|A|:" + getProblem().getActions().size());
+        System.out.println("|P|:" + getProblem().getProcessesSet().size());
+        System.out.println("|E|:" + getProblem().getEventsSet().size());
+        System.out.println("Size(X):" + problem.getNumberOfNumericVariables());
+        System.out.println("Size(F):" + problem.getNumberOfBooleanVariables());
+        if (pddlPlus) {
+            System.out.println("Delta time heuristic model:" + delta_t_h);
+            System.out.println("Delta time planning model:" + delta_max);
+            System.out.println("Delta time search-execution model:" + delta_t);
+            System.out.println("Delta time validation model:" + delta_val);
+        }
+//        System.out.println(problem.getActions());
+//        Set<String> subgoaling_based_heuristic = new HashSet<String>(Arrays.asList("h1","hmax_ref","h1_ref", "h1_5","h1i","lm_actions","hmax","hmmax","h1gi","lm_actions_rc","lm_actions_dc","lm_actions_rc_dc","hm_max","hm_add","hmaxnr"));
 
         h = null;
         //next is highly customized configuration
@@ -466,7 +467,7 @@ public class ENHSP {
                     h.additive_h = true;
                     ((h1) h).ibrDisabled = false;
                     ((h1) h).extractRelaxedPlan = true;
-                    
+
                     break;
                 }
                 case "hff_agg": {

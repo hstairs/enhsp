@@ -357,23 +357,7 @@ public class ENHSP {
 //        Set<String> subgoaling_based_heuristic = new HashSet<String>(Arrays.asList("h1","hmax_ref","h1_ref", "h1_5","h1i","lm_actions","hmax","hmmax","h1gi","lm_actions_rc","lm_actions_dc","lm_actions_rc_dc","hm_max","hm_add","hmaxnr"));
         if (planner != null) {
             switch (planner) {
-                case "c_h_sat":
-                    System.out.println("GBFS with numeric hadd plus helpful actions pruning plus sat breaking ties");
-                    heuristic = "hadd";
-                    gw = "1";
-                    hw = "4";
-                    search_engine = "gbfs_ha";
-                    break_ties = "larger_g";
-                    break;
-                case "c_h_sat_hff":
-                    System.out.println("GBFS with numeric hff plus helpful actions pruning plus sat breaking ties");
-                    heuristic = "hff";
-                    gw = "1";
-                    hw = "4";
-                    search_engine = "gbfs_ha";
-                    break_ties = "larger_g";
-                    break;
-                case "sat"://this is the version used for ijcai-16
+                case "sat-hadd"://this is the version used for ijcai-16
                     System.out.println("GBFS with numeric hadd");
                     heuristic = "hadd";
                     gw = "0";
@@ -381,69 +365,21 @@ public class ENHSP {
                     search_engine = "gbfs";
                     break_ties = "smaller_g";
                     break;
-                case "sat_red"://this is the version used for ijcai-16
+                case "sat-hradd"://this is the version used for ijcai-16
                     System.out.println("GBFS with numeric hadd and redundant constraints");
                     heuristic = "hradd";
                     gw = "0";
                     hw = "1";
                     search_engine = "gbfs";
                     break;
-                case "aibr":// this is the version used in the ecai-16 paper
+                case "sat-aibr":// this is the version used in the ecai-16 paper
                     System.out.println("A* with aibr");
                     heuristic = "aibr";
                     gw = "1";
                     hw = "1";
                     search_engine = "WAStar";
                     break;
-                case "sat_hff"://this is a new version
-                    System.out.println("GBFS with numeric hff");
-                    heuristic = "hff";
-                    gw = "0";
-                    hw = "1";
-                    search_engine = "gbfs";
-                    break_ties = "larger_g";
-                    break;
-                case "sat_hff_ni"://this is a new version
-                    System.out.println("GBFS with numeric hff");
-                    heuristic = "hff_ni";
-                    gw = "0";
-                    hw = "1";
-                    search_engine = "gbfs";
-                    break_ties = "larger_g";
-                    break;
-                case "sat_hff_red"://this is a new version
-                    System.out.println("GBFS with numeric hff");
-                    heuristic = "hff_rc";
-                    gw = "0";
-                    hw = "1";
-                    search_engine = "gbfs";
-                    break_ties = "larger_g";
-                    break;
-                case "sat_h_hff":
-                    System.out.println("GBFS with numeric hff and helpful actions pruning");
-                    heuristic = "hff";
-                    gw = "0";
-                    hw = "1";
-                    search_engine = "gbfs_ha";
-                    break_ties = "larger_g";
-                    break;
-                case "c_sat":
-                    System.out.println("WA-STAR with numeric hadd");
-                    heuristic = "hadd";
-                    gw = "1";
-                    hw = "4";
-                    search_engine = "WAStar";
-                    break_ties = "larger_g";
-                    break;
-                case "c_sat_hff":
-                    System.out.println("GBFS with numeric hff WAStar");
-                    heuristic = "hff_ni";
-                    gw = "1";
-                    hw = "4";
-                    search_engine = "gbfs";
-                    break_ties = "larger_g";
-                    break;
-                case "opt":// this is the version used in the ijcai-16 paper
+                case "opt-hrmax":// this is the version used in the ijcai-16 paper
                     System.out.println("A* with numeric hrmax");
                     heuristic = "hrmax";
                     gw = "1";
@@ -451,15 +387,15 @@ public class ENHSP {
                     break_ties = "larger_g";
                     search_engine = "WAStar";
                     break;
-                case "sat_hrmax":
-                    System.out.println("A* with numeric hrmax and h_w = 4");
-                    heuristic = "hrmax";
+                case "opt-hmax":// this is the version used in the ijcai-16 paper
+                    System.out.println("A* with numeric hrmax");
+                    heuristic = "hmax";
                     gw = "1";
-                    hw = "4";
+                    hw = "1";
                     break_ties = "larger_g";
                     search_engine = "WAStar";
                     break;
-                case "b_opt":
+                case "opt-blind":
                     System.out.println("A* with 0-1 goal heuristic");
                     heuristic = "blind";
                     gw = "1";
@@ -467,7 +403,7 @@ public class ENHSP {
                     break_ties = "larger_g";
                     search_engine = "WAStar";
                     break;
-                case "llm_opt":
+                case "opt-hlm":
                     System.out.println("A* with light numeric landmarks (no redundant constraints no dominance analysis");
                     heuristic = "lm_actions";
                     gw = "1";
@@ -475,7 +411,7 @@ public class ENHSP {
                     break_ties = "larger_g";
                     search_engine = "WAStar";
                     break;
-                case "rc_lm_opt"://this is the version used in the ijcai-17 paper on landmarks
+                case "opt-hlmrd"://this is the version used in the ijcai-17 paper on landmarks
                     System.out.println("A* with redundant constraints numeric landmarks");
                     heuristic = "lm_actions_rc_dc";
                     gw = "1";
@@ -483,15 +419,6 @@ public class ENHSP {
                     break_ties = "larger_g";
                     search_engine = "WAStar";
                     break;
-                case "lm_opt"://this is the version used in the ijcai-17 paper on landmarks
-                    System.out.println("A* with light numeric landmarks");
-                    heuristic = "lm_actions_dc";
-                    gw = "1";
-                    hw = "1";
-                    break_ties = "larger_g";
-                    search_engine = "WAStar";
-                    break;
-
                 default:
                     heuristic = "aibr";
                     search_engine = "WAStar";

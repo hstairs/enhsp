@@ -166,13 +166,7 @@ public class ENHSP {
         Options options = new Options();
         options.addRequiredOption("o", "domain", true, "PDDL domain file");
         options.addRequiredOption("f", "problem", true, "PDDL problem file");
-        options.addOption("planner", true, "Allows to set a pre-defined planner configuration. Available options are:\n "
-                + "sat - gbfs+hadd, it corresponds to IJCAI-16 inadmissible setting\n"
-                + "c_sat - WAStar+hadd+hw=4, a more systematic version of the above \n"
-                + "c_h_sat - WAStar+hadd+hw=4+helpful actions, a more systematic version of the above but with helpful actions \n"
-                + "opt - a_star+hrmax, optimal planning setting (IJCAI-16 admissible version)\n"
-                + "aibr - a_star+aibr heuristic (ECAI-16 system)\n"
-                + "lm_opt - a_star+hlm, optimal planning with landmarks (IJCAI-17 admissible version). This requires cplex 12.6.3 installed\n");
+        options.addOption("planner", true, "Fast Preconfgured Planner. For available options look into the code. This overrides all other parameters but domain and problem specs.");
         options.addOption("h", true, "heuristic: options (default is AIBR):\n"
                 + "aibr, Additive Interval Based relaxation heuristic\n"
                 + "hadd, Additive version of subgoaling heuristic\n"
@@ -345,6 +339,15 @@ public class ENHSP {
                     gw = "0";
                     hw = "1";
                     search_engine = "gbfs";
+                                        break_ties = "smaller_g";
+                    break;
+                case "sat-haddabs"://this is the version used for ijcai-16
+                    System.out.println("GBFS with effect-abstraction heuristic");
+                    heuristic = "haddabs";
+                    gw = "0";
+                    hw = "1";
+                    search_engine = "gbfs";
+                    break_ties = "smaller_g";
                     break;
                 case "sat-aibr":// this is the version used in the ecai-16 paper
                     System.out.println("A* with aibr");
@@ -353,6 +356,7 @@ public class ENHSP {
                     hw = "1";
                     search_engine = "WAStar";
                     break;
+                
                 case "opt-hrmax":// this is the version used in the ijcai-16 paper
                     System.out.println("A* with numeric hrmax");
                     heuristic = "hrmax";
@@ -386,15 +390,16 @@ public class ENHSP {
                     break_ties = "larger_g";
                     search_engine = "WAStar";
                     break;
-                case "opt-hlmrd"://this is the version used in the ijcai-17 paper on landmarks
+                case "opt-hlmrc"://this is the version used in the ijcai-17 paper on landmarks
                     System.out.println("A* with redundant constraints numeric landmarks");
-                    heuristic = "lm_actions_rc_dc";
+                    heuristic = "lm_actions_rc";
                     gw = "1";
                     hw = "1";
                     break_ties = "larger_g";
                     search_engine = "WAStar";
                     break;
                 default:
+                    System.out.println("! ====== ! Warning: Unknown planner configuration. Going with default: wastar with aibr ! ====== !");
                     heuristic = "aibr";
                     search_engine = "WAStar";
                     break;

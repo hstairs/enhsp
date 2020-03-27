@@ -1,5 +1,9 @@
 
+import com.sun.org.apache.xpath.internal.Arg;
+import org.apache.commons.cli.*;
 import planners.ENHSP;
+import utils.ArgParams;
+import validators.Validator;
 
 /* 
  * Copyright (C) 2015-2017, Enrico Scala, contact: enricos83@gmail.com
@@ -23,12 +27,17 @@ import planners.ENHSP;
 
 public class main {
 
-
-
     public static void main(String[] args) throws Exception {
-        ENHSP p = new ENHSP(false);
-        p.parsingDomainAndProblem(args);
-        p.planning();
+
+        ArgParams params = ArgParams.parseInput(args);
+
+        if(!params.validate) {
+            ENHSP p = new ENHSP(params);
+            p.plan();
+        }else{
+            Validator v = new Validator(params);
+            v.validate();
+        }
     }
 
   

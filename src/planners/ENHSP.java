@@ -1,22 +1,17 @@
 package planners;
 
+import com.hstairs.ppmajal.conditions.AndCond;
 import com.hstairs.ppmajal.domain.PddlDomain;
-import com.hstairs.ppmajal.heuristics.Aibr;
-import com.hstairs.ppmajal.heuristics.Heuristic;
-import com.hstairs.ppmajal.heuristics.advanced.GoalCounting;
-import com.hstairs.ppmajal.heuristics.advanced.h1;
-import com.hstairs.ppmajal.heuristics.advanced.habs_add;
-import com.hstairs.ppmajal.heuristics.advanced.hlm;
-import com.hstairs.ppmajal.heuristics.advanced.quasi_hm;
-import com.hstairs.ppmajal.heuristics.blindHeuristic;
-import com.hstairs.ppmajal.plan.SimplePlan;
+import com.hstairs.ppmajal.pddl.heuristics.BlindHeuristic;
+import com.hstairs.ppmajal.pddl.heuristics.advanced.Aibr;
+import com.hstairs.ppmajal.pddl.heuristics.advanced.GoalCounting;
+import com.hstairs.ppmajal.pddl.heuristics.advanced.H1;
 import com.hstairs.ppmajal.problem.EPddlProblem;
-import com.hstairs.ppmajal.problem.PDDLState;
-import com.hstairs.ppmajal.search.PDDLSearchEngine;
+import com.hstairs.ppmajal.problem.PDDLSearchEngine;
 import com.hstairs.ppmajal.search.SearchEngine;
-import com.hstairs.ppmajal.search.SearchNode;
-import java.io.FileWriter;
-import java.io.IOException;
+import com.hstairs.ppmajal.transition.TransitionGround;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,6 +21,11 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang3.tuple.Pair;
+import com.hstairs.ppmajal.search.SearchHeuristic;
+import it.unimi.dsi.fastutil.ints.IntArraySet;
+import java.util.Collection;
+import java.util.Map;
 
 /*
  * Copyright (C) 2016-2017 Enrico Scala. Email enricos83@gmail.com.
@@ -56,81 +56,95 @@ public class ENHSP {
 
     private String domainFile;
     private String problemFile;
-    private String search_engine;
+    private String searchEngineString;
     private String hw;
     private String heuristic = "aibr";
     private String gw;
-    private int debug_level = 0;
     private boolean saving_json = false;
-    private String delta_t;
+    private String deltaExecution;
     private float depthLimit;
-    private boolean save_plan;
-    private boolean print_trace;
-    private String break_ties;
+    private String savePlan;
+    private boolean printTrace;
+    private String tieBreaking;
     private String planner;
-    private Float epsilon;
-    private String epsilon_string;
-    private Integer debug;
-    private String delta_t_h;
-    private String delta_max;
-    private String delta_val;
-    private boolean eco_saving_json;
-    private boolean hh_pruning;
-    private boolean ignore_metric;
-    private Integer num_of_subdomains;
-    private Heuristic heuristicFunction;
+    private String deltaHeuristic;
+    private String deltaPlanning;
+    private String deltaValidation;
+    private boolean helpfulActionsPruning;
+    private Integer numSubdomains;
+    private SearchHeuristic heuristicFunction;
     private EPddlProblem problem;
     private boolean pddlPlus;
     private PddlDomain domain;
     private PddlDomain domainHeuristic;
     private EPddlProblem heuristicProblem;
-    private long very_start;
+    private long overallStart;
     private boolean copyOfTheProblem;
     private boolean anyTime;
     private long timeOut;
     private boolean aibrPreprocessing;
-    private Heuristic h;
-    private long overal_planning_time;
-    private String inputPlan;
+    private SearchHeuristic h;
+    private long overallPlanningTime;
+    private float endGValue;
+    private boolean helpfulTransitions;
+    private boolean internalValidation = false;
+    private int planLength;
+    private String redundantConstraints;
+    private String metricffGrounding;
+    private boolean naiveGrounding;
+    private boolean stopAfterGrounding;
 
     public ENHSP(boolean copyProblem) {
         copyOfTheProblem = copyProblem;
     }
 
-    public void parsingDomainAndProblem(String[] args) {
+    public int getPlanLength() {
+        return planLength;
+    }
+    
+    
+    public Pair<PddlDomain,EPddlProblem> parseDomainProblem(String domainFile, String problemFile, String delta, PrintStream out){
         try {
-            parseInput(args);
-            very_start = System.currentTimeMillis();
-            domain = new PddlDomain(domainFile);
-            domain.substituteEqualityConditions();
+            final PddlDomain domain = new PddlDomain(domainFile);
+            //domain.substituteEqualityConditions();
             pddlPlus = !domain.getProcessesSchema().isEmpty() || !domain.eventsSchema.isEmpty();
-
-            System.out.println("Domain parsed");
-
-            problem = new EPddlProblem(problemFile, domain.getConstants(), domain.types, domain);
+            out.println("Domain parsed");
+            final EPddlProblem problem = new EPddlProblem(problemFile, domain.getConstants(), domain.types, domain, out, metricffGrounding);
+            if (!domain.getProcessesSchema().isEmpty()){
+                problem.setDeltaTimeVariable(delta);
+            }
             //this second model is the one used in the heuristic. This can potentially be different from the one used in the execution model. Decoupling it
             //allows us to a have a finer control on the machine
             //the third one is the validation model, where, also in this case we test our plan against a potentially more accurate description
+            out.println("Problem parsed");
+            out.println("Grounding..");
+            problem.groundingSimplication(aibrPreprocessing,stopAfterGrounding); 
+            if (stopAfterGrounding){
+                System.exit(1);
+            }
+            return Pair.of(domain, problem);
+        } catch (Exception ex) {
+            Logger.getLogger(ENHSP.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
 
-            System.out.println("Problem parsed");
-            System.out.println("Grounding..");
-            getProblem().transformGoal();
-            getProblem().groundingActionProcessesConstraints();
-            if (pddlPlus || copyOfTheProblem || heuristic.equals("hadd") || heuristic.equals("hff")
-                    || heuristic.equals("hlm") || heuristic.equals("hm_max") || heuristic.equals("hrmax") || heuristic.equals("hmax")
-                    || heuristic.equals("haddabs")) {
-                domainHeuristic = new PddlDomain(domainFile);
-                domainHeuristic.substituteEqualityConditions();
-                heuristicProblem = new EPddlProblem(problemFile, domainHeuristic.getConstants(), domain.getTypes(),domainHeuristic);
-                heuristicProblem.transformGoal();
-                heuristicProblem.groundingActionProcessesConstraints();//optimise this using clone.
-//                heuristicProblem.syncAllVariablesAndUpdateCollections(getProblem());//This way we are sure we only keep one copy of each variable
+    public void parsingDomainAndProblem(String[] args) {
+        try {
+            overallStart = System.currentTimeMillis();
+            Pair<PddlDomain, EPddlProblem> res = parseDomainProblem(domainFile, problemFile, deltaExecution, System.out);
+            domain = res.getKey();
+            problem = res.getRight();
+            if (pddlPlus) {
+                PrintStream devnull = new PrintStream(new OutputStream() {
+                    public void write(int b) {
+                        //DO NOTHING
+                    }
+                });
+                res = parseDomainProblem(domainFile, problemFile, deltaHeuristic, devnull);
+                domainHeuristic = res.getKey();
+                heuristicProblem = res.getRight();
                 copyOfTheProblem = true;
-                if (pddlPlus) {
-                    heuristicProblem.setDeltaTimeVariable(delta_t_h);
-                    getProblem().setDeltaTimeVariable(delta_t);
-
-                }
             } else {
                 heuristicProblem = problem;
 
@@ -139,18 +153,22 @@ public class ENHSP {
             ex.printStackTrace();
         }
     }
-
+    public void configurePlanner(){
+        if (planner != null) {
+            setPlanner();
+        }
+    }
     public void planning() {
 
         try {
-            simplifyModels();
+            printStats();
+            configureHeuristic();
             do {
-                SimplePlan sp = search();
+                LinkedList sp = search();
                 if (sp == null) {
                     return;
                 }
-                depthLimit = sp.getCost();
-                sp.savePlan("/tmp/plan." + depthLimit);
+                depthLimit = endGValue;
                 if (anyTime) {
                     System.out.println("NEW COST ==================================================================================>" + depthLimit);
                 }
@@ -158,11 +176,12 @@ public class ENHSP {
                 System.gc();
             } while (anyTime);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(ENHSP.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
 
-    private void parseInput(String[] args) {
+    }      
+
+    public void parseInput(String[] args) {
         Options options = new Options();
         options.addRequiredOption("o", "domain", true, "PDDL domain file");
         options.addRequiredOption("f", "problem", true, "PDDL problem file");
@@ -170,42 +189,43 @@ public class ENHSP {
         options.addOption("h", true, "heuristic: options (default is AIBR):\n"
                 + "aibr, Additive Interval Based relaxation heuristic\n"
                 + "hadd, Additive version of subgoaling heuristic\n"
+                + "hradd, Additive version of subgoaling heuristic plus redundant constraints\n"
                 + "hmax, Hmax for Numeric Planning\n"
                 + "hrmax, Hmax for Numeric Planning with redundant constraints\n"
-                + "hff, hadd with extraction of relaxed plan a-la ff manner\n"
-                + "lm_actions_rc_dc, Landmark based heuristic "
-                + "with redundant constraints and metric sensitive intersection (Requires CPLEX 12.6.3)\n"
-                + "lm_actions, Landmark based heuristic (Requires CPLEX 12.6.3)\n"
-                + "lm_actions_rc, Landmark based heuristic  (Requires CPLEX 12.6.3)\n"
+                + "hmrp, heuristic based on MRP extraction\n"
                 + "blind, goal sensitive heuristic (1 to non goal-states, 0 to goal-states");
         options.addOption("s", true, "allows to select search strategy (default is WAStar):\n"
                 + "gbfs, Greedy Best First Search (f(n) = h(n))\n"
                 + "WAStar, WA* (f(n) = g(n) + h_w*h(n))\n"
-                + "wa_star_4, WA* (f(n) = g(n) + 4*h(n))\n"
-                + "ehc, Enforced Hill Climbing\n"
-                + "gbfs_ha, Greedy Best First Search with Helpful Actions Pruning\n"
-                + "ehc_ha, Enforced Hill Climbing with Helpful Actions Pruning");
+                + "wa_star_4, WA* (f(n) = g(n) + 4*h(n))\n");
         options.addOption("ties", true, "tie-breaking (default is arbitrary): larger_g, smaller_g, arbitrary");
-        options.addOption("delta_max", true, "planning decision executionDelta: float");
-        options.addOption("delta_exec", true, "planning execution executionDelta: float");
-        options.addOption("delta_h", true, "planning heuristic executionDelta: float");
-        options.addOption("delta_val", true, "validation executionDelta: float");
-        options.addOption("delta", true, "global executionDelta time. Override other delta_<max,exec,val,h> configurations: float");
-        options.addOption("debugLevel", true, "debugLevel level: integer");
+        options.addOption("dp","delta_planning", true, "planning decision executionDelta: float");
+        options.addOption("de","delta_execuction", true, "planning execution executionDelta: float");
+        options.addOption("dh","delta_heuristic", true, "planning heuristic executionDelta: float");
+        options.addOption("dv","delta_validation", true, "validation executionDelta: float");
+        options.addOption("d","delta", true, "Override other delta_<planning,execuction,validation,heuristic> configurations: float");
         options.addOption("epsilon", true, "epsilon separation: float");
-        options.addOption("gw", true, "g-values weight: float");
-        options.addOption("hw", true, "h-values weight: float");
+        options.addOption("wg", true, "g-values weight: float");
+        options.addOption("wh", true, "h-values weight: float");
         options.addOption("sjr", false, "save state space explored in json file");
-        options.addOption("hh", false, "activate helpful actions pruning");
-        options.addOption("sp", false, "save the plan obtained");
+        options.addOption("ha","helpful-actions", true, "activate helpful actions pruning");
+        options.addOption("ht","helpful-transitions", true, "activate up-to-macro actions");
+        options.addOption("sp", true, "Save plan. Argument is filename");
         options.addOption("pt", false, "print state trajectory (Experimental)");
         options.addOption("im", false, "Ignore Metric in the heuristic");
+        options.addOption("dap", false, "Disable Aibr Preprocessing");
+        options.addOption("red","redundant_constraints", true, "Choose mechanism for redundant constraints generation among, "
+                + "no, brute and smart. No redundant constraints generation is the default");
+        options.addOption("gro","grounding", true, "Activate grounding via internal mechanism, fd or metricff or internal or naive (default is internal)");
+        
+
+
         options.addOption("dl", true, "bound on plan-cost: float (Experimental)");
         options.addOption("k", true, "maximal number of subdomains. This works in combination with haddabs: integer");
         options.addOption("anytime", false, "Run in anytime modality. Incrementally tries to find an upper bound. Does not stop until the user decides so");
         options.addOption("timeout", true, "Timeout for anytime modality");
-        options.addOption("dap", false, "disable Aibr Preprocessing");
-        options.addOption("ip",true,"Read plan from file");
+        options.addOption("stopgro", false, "Stop After Grounding");
+
         CommandLineParser parser = new DefaultParser();
         try {
             CommandLine cmd = parser.parse(options, args);
@@ -216,27 +236,38 @@ public class ENHSP {
             if (heuristic == null) {
                 heuristic = "aibr";
             }
-            search_engine = cmd.getOptionValue("s");
-            if (search_engine == null) {
-                search_engine = "WAStar";
+            searchEngineString = cmd.getOptionValue("s");
+            if (searchEngineString == null) {
+                searchEngineString = "WAStar";
             }
-            inputPlan = cmd.getOptionValue("ip");
-            break_ties = cmd.getOptionValue("ties");
-            delta_max = cmd.getOptionValue("delta_max");
-            if (delta_max == null) {
-                delta_max = "1.0";
+            tieBreaking = cmd.getOptionValue("ties");
+            deltaPlanning = cmd.getOptionValue("dp");
+            if (deltaPlanning == null) {
+                deltaPlanning = "1.0";
             }
-            delta_t = cmd.getOptionValue("delta_exec");
-            if (delta_t == null) {
-                delta_t = "1.0";
+            String optionValue = cmd.getOptionValue("red");
+            if (optionValue == null){
+                redundantConstraints = "no";
+            }else{
+                redundantConstraints = optionValue;
             }
-            delta_t_h = cmd.getOptionValue("delta_h");
-            if (delta_t_h == null) {
-                delta_t_h = "1.0";
+            optionValue = cmd.getOptionValue("gro");
+            if (optionValue != null){
+                metricffGrounding = optionValue;
+            }else{
+                metricffGrounding = "internal";
             }
-            delta_val = cmd.getOptionValue("delta_val");
-            if (delta_val == null) {
-                delta_val = "1";
+            deltaExecution = cmd.getOptionValue("de");
+            if (deltaExecution == null) {
+                deltaExecution = "1.0";
+            }
+            deltaHeuristic = cmd.getOptionValue("dh");
+            if (deltaHeuristic == null) {
+                deltaHeuristic = "1.0";
+            }
+            deltaValidation = cmd.getOptionValue("dv");
+            if (deltaValidation == null) {
+                deltaValidation = "1";
             }
             String temp = cmd.getOptionValue("dl");
             if (temp != null) {
@@ -254,42 +285,30 @@ public class ENHSP {
 
             String delta = cmd.getOptionValue("delta");
             if (delta != null) {
-                delta_t_h = delta;
-                delta_val = delta;
-                delta_max = delta;
-                delta_t = delta;
-            }
-            String deb = cmd.getOptionValue("debugLevel");
-            if (deb != null) {
-                debug = Integer.parseInt(deb);
-            } else {
-                debug = 0;
+                deltaHeuristic = delta;
+                deltaValidation = delta;
+                deltaPlanning = delta;
+                deltaExecution = delta;
             }
 
             String k = cmd.getOptionValue("k");
             if (k != null) {
-                num_of_subdomains = Integer.parseInt(k);
+                numSubdomains = Integer.parseInt(k);
             } else {
-                num_of_subdomains = 2;
+                numSubdomains = 2;
             }
 
-            epsilon_string = cmd.getOptionValue("epsilon");
-            if (epsilon_string == null) {
-                epsilon = 0f;
-            } else {
-                epsilon = Float.parseFloat(epsilon_string);
-            }
-
-            gw = cmd.getOptionValue("gw");
-            hw = cmd.getOptionValue("hw");
+            
+            gw = cmd.getOptionValue("wg");
+            hw = cmd.getOptionValue("wh");
             saving_json = cmd.hasOption("sjr");
-            hh_pruning = cmd.hasOption("hh");
-            print_trace = cmd.hasOption("pt");
-            save_plan = cmd.hasOption("sp");
-            ignore_metric = cmd.hasOption("im");
+            helpfulActionsPruning = cmd.getOptionValue("ha") != null && "true".equals(cmd.getOptionValue("ha"));
+            printTrace = cmd.hasOption("pt");
+            savePlan = cmd.getOptionValue("sp");
             anyTime = cmd.hasOption("anytime");
             aibrPreprocessing = !cmd.hasOption("dap");
-
+            stopAfterGrounding = cmd.hasOption("stopgro");
+            helpfulTransitions = cmd.getOptionValue("ht") != null && "true".equals(cmd.getOptionValue("ht"));
         } catch (ParseException exp) {
 //            Logger.getLogger(ENHSP.class.getName()).log(Level.SEVERE, null, ex);
             System.err.println("Parsing failed.  Reason: " + exp.getMessage());
@@ -303,14 +322,14 @@ public class ENHSP {
     /**
      * @return the heuristicFunction
      */
-    public Heuristic getHeuristicFunction() {
+    public SearchHeuristic getHeuristicFunction() {
         return heuristicFunction;
     }
 
     /**
      * @param heuristicFunction the heuristicFunction to set
      */
-    public void setHeuristicFunction(Heuristic heuristicFunction) {
+    public void setHeuristicFunction(SearchHeuristic heuristicFunction) {
         this.heuristicFunction = heuristicFunction;
     }
 
@@ -320,473 +339,166 @@ public class ENHSP {
     public EPddlProblem getProblem() {
         return problem;
     }
-
-    private void simplifyModels() throws Exception {
-        System.out.println("Light Validation Completed");
-        if (planner != null) {
-            switch (planner) {
-                case "sat-hadd"://this is the version used for ijcai-16
-                    System.out.println("GBFS with numeric hadd");
-                    heuristic = "hadd";
-                    gw = "0";
-                    hw = "1";
-                    search_engine = "gbfs";
-                    break_ties = "smaller_g";
-                    break;
-                case "sat-hradd"://this is the version used for ijcai-16
-                    System.out.println("GBFS with numeric hadd and redundant constraints");
-                    heuristic = "hradd";
-                    gw = "0";
-                    hw = "1";
-                    search_engine = "gbfs";
-                                        break_ties = "smaller_g";
-                    break;
-                case "sat-haddabs"://this is the version used for ijcai-16
-                    System.out.println("GBFS with effect-abstraction heuristic");
-                    heuristic = "haddabs";
-                    gw = "0";
-                    hw = "1";
-                    search_engine = "gbfs";
-                    break_ties = "smaller_g";
-                    break;
-                case "sat-aibr":// this is the version used in the ecai-16 paper
-                    System.out.println("A* with aibr");
-                    heuristic = "aibr";
-                    gw = "1";
-                    hw = "1";
-                    search_engine = "WAStar";
-                    break;
-                
-                case "opt-hrmax":// this is the version used in the ijcai-16 paper
-                    System.out.println("A* with numeric hrmax");
-                    heuristic = "hrmax";
-                    gw = "1";
-                    hw = "1";
-                    break_ties = "larger_g";
-                    search_engine = "WAStar";
-                    break;
-                case "opt-hmax":// this is the version used in the ijcai-16 paper
-                    System.out.println("A* with numeric hrmax");
-                    heuristic = "hmax";
-                    gw = "1";
-                    hw = "1";
-                    break_ties = "larger_g";
-                    search_engine = "WAStar";
-                    break;
-                case "opt-blind":
-                    System.out.println("A* with 0-1 goal heuristic");
-                    heuristic = "blind";
-                    aibrPreprocessing = false;
-                    gw = "1";
-                    hw = "1";
-                    break_ties = "larger_g";
-                    search_engine = "WAStar";
-                    break;
-                case "opt-hlm":
-                    System.out.println("A* with light numeric landmarks (no redundant constraints no dominance analysis");
-                    heuristic = "lm_actions";
-                    gw = "1";
-                    hw = "1";
-                    break_ties = "larger_g";
-                    search_engine = "WAStar";
-                    break;
-                case "opt-hlmrc"://this is the version used in the ijcai-17 paper on landmarks
-                    System.out.println("A* with redundant constraints numeric landmarks");
-                    heuristic = "lm_actions_rc";
-                    gw = "1";
-                    hw = "1";
-                    break_ties = "larger_g";
-                    search_engine = "WAStar";
-                    break;
-                default:
-                    System.out.println("! ====== ! Warning: Unknown planner configuration. Going with default: wastar with aibr ! ====== !");
-                    heuristic = "aibr";
-                    search_engine = "WAStar";
-                    break;
-            }
-        }
-
-        if (debug == 11) {
-            System.out.println("Before Reachability: " + getProblem().actions);
-        }
-        System.out.println("Simplification..");
-        problem.setAction_cost_from_metric(!ignore_metric);
-        getProblem().simplifyAndSetupInit(true, aibrPreprocessing);
-        if (copyOfTheProblem) {
-            heuristicProblem.setAction_cost_from_metric(!ignore_metric);
-            heuristicProblem.simplifyAndSetupInit();
-        }
-
-        System.out.println("Grounding and Simplification finished");
+    
+    public void printStats(){
+             System.out.println("Grounding and Simplification finished");
         System.out.println("|A|:" + getProblem().getActions().size());
         System.out.println("|P|:" + getProblem().getProcessesSet().size());
         System.out.println("|E|:" + getProblem().getEventsSet().size());
-        System.out.println("Size(X):" + problem.getNumberOfNumericVariables());
-        System.out.println("Size(F):" + problem.getNumberOfBooleanVariables());
-        if (pddlPlus) {
-            System.out.println("Delta time heuristic model:" + delta_t_h);
-            System.out.println("Delta time planning model:" + delta_max);
-            System.out.println("Delta time search-execution model:" + delta_t);
-            System.out.println("Delta time validation model:" + delta_val);
+        if (pddlPlus){
+            System.out.println("Delta time heuristic model:" + deltaHeuristic);
+            System.out.println("Delta time planning model:" + deltaPlanning);
+            System.out.println("Delta time search-execution model:" + deltaExecution);
+            System.out.println("Delta time validation model:" + deltaValidation);
+        }   
+    }
+    
+    private void setPlanner() {
+        helpfulTransitions = false;
+        helpfulActionsPruning = false;
+        tieBreaking = "arbitrary";
+        switch (planner) {
+            case "sat-hmrp":
+                heuristic = "hmrp";
+                searchEngineString = "gbfs";
+                tieBreaking = "arbitrary";
+                break;
+            case "sat-hmrph":
+                heuristic = "hmrp";
+                helpfulActionsPruning = true;
+                searchEngineString = "gbfs";
+                tieBreaking = "arbitrary";
+                break;
+            case "sat-hmrphj":
+                heuristic = "hmrp";
+                helpfulActionsPruning = true;
+                helpfulTransitions = true;
+                searchEngineString = "gbfs";
+                tieBreaking = "arbitrary";
+                break;
+            case "sat-hmrpff":
+                heuristic = "hmrp";
+                helpfulActionsPruning = false;
+                redundantConstraints = "brute";
+                helpfulTransitions = false;
+                searchEngineString = "gbfs";
+                tieBreaking = "arbitrary";
+                break;
+            case "sat-hadd":
+                heuristic = "hadd";
+                searchEngineString = "gbfs";
+                tieBreaking = "smaller_g";
+                break;
+            case "sat-aibr":
+                heuristic = "aibr";
+                searchEngineString = "WAStar";
+                tieBreaking = "arbitrary";
+                break;
+            case "sat-hradd":
+                heuristic = "hradd";
+                searchEngineString = "gbfs";
+                tieBreaking = "smaller_g";
+                break;
+            case "opt-hmax":
+                heuristic = "hmax";
+                searchEngineString = "WAStar";
+                tieBreaking = "larger_g";
+                break;
+            case "opt-hrmax":
+                heuristic = "hrmax";
+                searchEngineString = "WAStar";
+                tieBreaking = "larger_g";
+                break;
+            case "opt-blind":
+                heuristic = "blind";
+                searchEngineString = "WAStar";
+                tieBreaking = "larger_g";
+                aibrPreprocessing = false;
+                break;
+            default:
+                System.out.println("! ====== ! Warning: Unknown planner configuration. Going with default: gbfs with hadd ! ====== !");
+                heuristic = "hadd";
+                searchEngineString = "gbfs";
+                tieBreaking = "smaller_g";
+                break;
         }
-//        System.out.println(problem.getActions());
-//        Set<String> subgoaling_based_heuristic = new HashSet<String>(Arrays.asList("h1","hmax_ref","h1_ref", "h1_5","h1i","lm_actions","hmax","hmmax","h1gi","lm_actions_rc","lm_actions_dc","lm_actions_rc_dc","hm_max","hm_add","hmaxnr"));
 
+    }
+
+    private void setHeuristic() {
+        System.out.println("ha:" + helpfulActionsPruning + " ht" + helpfulTransitions);
+
+        Map<AndCond, Collection<IntArraySet>> redConstraint = null;
+        if ("smart".equals(redundantConstraints)) {
+            System.out.println("Redundant constriants");
+            final H1 h1 = new H1(problem, true, true, false, "smart", false, true, false, false);
+            h1.computeEstimate(problem.getInit());
+            redConstraint = h1.generateSmartRedundantConstraints();
+        }
+
+        
+        
+        switch (heuristic) {
+            case "gc": {
+                h = new GoalCounting(heuristicProblem);
+                break;
+            }
+            case "hadd": {
+                h = new H1(heuristicProblem, true, false, false, redundantConstraints, false, false, false, false,redConstraint);
+                break;
+            } 
+            case "hradd": {
+                h = new H1(heuristicProblem, true, false, false, "brute", false, false, false, false);
+                break;
+            }
+                 
+            case "hrmax": {
+                h = new H1(heuristicProblem, false, false, false, "brute", false, false, false, false);
+                break;
+            }
+            case "hmax": {
+                h = new H1(heuristicProblem, false, false, false, redundantConstraints, false, false, false, false,redConstraint);
+                break;
+            }
+            case "hmrp": {
+                h = new H1(heuristicProblem, true, true, false, redundantConstraints, helpfulActionsPruning, false, helpfulTransitions, true, redConstraint);
+                break;
+            }
+            case "blind": {
+                h = new BlindHeuristic(heuristicProblem);
+                break;
+            }
+            case "aibr": {
+                System.out.println("AIBR selected");
+                h = new Aibr(heuristicProblem);
+                break;
+            }
+            default:
+                if (heuristic != null) {
+                    System.out.println("Folding back to 1-0 heuristic. Input heuristic is not supported");
+                }
+                h = new BlindHeuristic(heuristicProblem);
+                break;
+        }
+        
+    }
+
+    private void configureHeuristic() throws Exception {
+        
         h = null;
         //next is highly customized configuration
         if (getHeuristicFunction() != null) {
             h = getHeuristicFunction();
         } else {
-
-            switch (heuristic) {
-
-                case "hadd_exp": {
-                    h = new h1(getProblem());
-                    ((h1) h).useRedundantConstraints = false;
-                    h.additive_h = true;
-                    break;
-                }
-                case "hadd": {
-                    h = new h1(getProblem());
-                    ((h1) h).useRedundantConstraints = false;
-                    h.additive_h = true;
-                    break;
-                }
-                case "hadd_ni": {
-                    h = new h1(getProblem());
-                    ((h1) h).useRedundantConstraints = false;
-                    h.additive_h = true;
-                    ((h1) h).ibrDisabled = true;
-                    break;
-                }
-                case "hadd_ni_no_cost": {
-                    h = new h1(getProblem(), true);
-                    ((h1) h).useRedundantConstraints = false;
-                    h.additive_h = true;
-                    ((h1) h).ibrDisabled = true;
-                    break;
-                }
-                case "hff": {
-                    h = new h1(getProblem());
-                    ((h1) h).useRedundantConstraints = false;
-                    h.additive_h = true;
-                    ((h1) h).ibrDisabled = false;
-                    ((h1) h).extractRelaxedPlan = true;
-
-                    break;
-                }
-                case "hff_agg": {
-                    h = new h1(getProblem());
-                    ((h1) h).useRedundantConstraints = false;
-                    h.additive_h = true;
-                    ((h1) h).ibrDisabled = false;
-                    ((h1) h).extractRelaxedPlan = true;
-                    
-                    ((h1) h).aggressiveRelaxedPlan = true;
-
-                    break;
-                }
-                case "hff_agg_rc": {
-                    h = new h1(getProblem());
-                    ((h1) h).useRedundantConstraints = false;
-                    h.additive_h = true;
-                    ((h1) h).ibrDisabled = false;
-                    ((h1) h).extractRelaxedPlan = true;
-                    
-                    ((h1) h).aggressiveRelaxedPlan = true;
-
-                    break;
-                }
-                case "hff_max": {
-                    h = new h1(getProblem());
-                    ((h1) h).useRedundantConstraints = false;
-                    ((h1) h).additive_h = false;
-                    ((h1) h).ibrDisabled = false;
-                    ((h1) h).extractRelaxedPlan = true;
-                    
-                    
-                    break;
-                }
-                case "hff_max_agg": {
-                    h = new h1(getProblem());
-                    ((h1) h).useRedundantConstraints = false;
-                    ((h1) h).additive_h = false;
-                    ((h1) h).ibrDisabled = false;
-                    ((h1) h).extractRelaxedPlan = true;
-                    
-                    ((h1) h).aggressiveRelaxedPlan = true;
-                    break;
-                }
-                case "hff_max_agg_rc": {
-                    h = new h1(getProblem());
-                    ((h1) h).useRedundantConstraints = true ;
-                    ((h1) h).additive_h = false;
-                    ((h1) h).ibrDisabled = false;
-                    ((h1) h).extractRelaxedPlan = true;
-                    
-                    ((h1) h).aggressiveRelaxedPlan = true;
-                    break;
-                }
-                case "hff_max_rc": {
-                    h = new h1(getProblem());
-                    ((h1) h).useRedundantConstraints = true;
-                    ((h1) h).additive_h = false;
-                    ((h1) h).ibrDisabled = false;
-                    ((h1) h).extractRelaxedPlan = true;
-                    
-                    break;
-                }
-                case "hff_max_rc_agg": {
-                    h = new h1(getProblem());
-                    ((h1) h).useRedundantConstraints = true;
-                    ((h1) h).additive_h = false;
-                    ((h1) h).ibrDisabled = false;
-                    ((h1) h).extractRelaxedPlan = true;
-                    
-                    ((h1) h).aggressiveRelaxedPlan = true;
-                    break;
-                }
-                case "hff_pp": {
-                    h = new h1(getProblem());
-                    ((h1) h).useRedundantConstraints = true;
-                    ((h1) h).additive_h = true;
-                    ((h1) h).ibrDisabled = false;
-                    ((h1) h).extractRelaxedPlan = true;
-                    
-                    ((h1) h).only_mutual_exclusion_processes = true;
-                    break;
-                }
-                case "hff_pp_rc": {
-                    h = new h1(getProblem());
-                    ((h1) h).useRedundantConstraints = true;
-                    h.additive_h = true;
-                    ((h1) h).ibrDisabled = false;
-                    ((h1) h).extractRelaxedPlan = true;
-                    
-                    ((h1) h).only_mutual_exclusion_processes = true;
-                    break;
-                }
-                case "hff_rc": {
-                    h = new h1(getProblem());
-                    ((h1) h).useRedundantConstraints = true;
-                    h.additive_h = true;
-                    ((h1) h).ibrDisabled = false;
-                    ((h1) h).extractRelaxedPlan = true;
-                    
-                    break;
-                }
-                case "hff_ni": {
-                    h = new h1(getProblem());
-                    ((h1) h).useRedundantConstraints = false;
-                    h.additive_h = true;
-                    ((h1) h).ibrDisabled = true;
-                    ((h1) h).extractRelaxedPlan = true;
-                    
-                    break;
-                }
-                case "hff_ni_rc": {
-                    h = new h1(getProblem());
-                    ((h1) h).useRedundantConstraints = true;
-                    h.additive_h = true;
-                    ((h1) h).ibrDisabled = true;
-                    ((h1) h).extractRelaxedPlan = true;
-                    
-                    break;
-                }
-                case "hiadd": {
-                    h = new h1(getProblem());
-                    ((h1) h).useRedundantConstraints = false;
-                    h.additive_h = true;
-                    ((h1) h).integer_actions = true;
-                    break;
-                }
-                case "hradd": {
-                    h = new h1(getProblem());
-                    ((h1) h).useRedundantConstraints = true;
-                    h.additive_h = true;
-                    break;
-                }
-                case "hrmax": {
-                    h = new h1(getProblem());
-                    ((h1) h).additive_h = false;
-                    ((h1) h).useRedundantConstraints = true;
-                    ((h1) h).conservativehmax = false;//this corresponds to ijcai-16 version
-                    break;
-                }
-                case "hrmax_cons": {
-                    h = new h1(getProblem());
-                    ((h1) h).additive_h = false;
-                    ((h1) h).useRedundantConstraints = true;
-                    ((h1) h).conservativehmax = true;//this corresponds to ijcai-16 version
-                    break;
-                }
-                case "hmax": {
-                    h = new h1(getProblem());
-                    ((h1) h).additive_h = false;
-                    ((h1) h).useRedundantConstraints = false;
-                    ((h1) h).conservativehmax = false;//this corresponds to ijcai-16 version
-                    break;
-                }
-                case "hmax_cons": {
-                    h = new h1(getProblem());
-                    ((h1) h).additive_h = false;
-                    ((h1) h).useRedundantConstraints = false;
-                    ((h1) h).conservativehmax = true;//this corresponds to ijcai-16 version
-                    break;
-                }
-                case "aibr": {
-                    h = new Aibr(heuristicProblem);
-                    ((Aibr) h).set(false, true);
-                    break;
-                }
-
-                case "aibr_cons": {
-                    h = new Aibr(heuristicProblem);
-                    ((Aibr) h).set(true, true);
-                    break;
-                }
-                case "hm_max": {
-
-                    h = new quasi_hm(heuristicProblem);
-                    //h.additive_h = true;
-                    h.additive_h = false;
-                    ((quasi_hm) h).greedy = false;
-                    break;
-                }
-                case "hm_max_gr": {
-                    h = new quasi_hm(heuristicProblem);
-                    h.additive_h = false;
-                    ((quasi_hm) h).greedy = true;
-                    break;
-                }
-                case "hm_add": {
-                    h = new quasi_hm(heuristicProblem);
-                    h.additive_h = true;
-                    ((quasi_hm) h).greedy = false;
-                    break;
-                }
-                case "hm_add_gr": {
-                    h = new quasi_hm(heuristicProblem);
-                    h.additive_h = true;
-                    ((quasi_hm) h).greedy = true;
-                    break;
-                }
-
-                case "lm_actions": {
-                    //ssearchEngine.setupHeuristic(new hlm(heuristicProblem));
-                    h = new hlm(heuristicProblem);
-                    ((hlm) h).lp_cost_partinioning = true;
-                    break;
-                }
-                case "lm_actions_rc": {
-
-                    h = new hlm(heuristicProblem);
-                    ((hlm) h).lp_cost_partinioning = true;
-                    ((hlm) h).useRedundantConstraints = true;
-                    ((hlm) h).red_constraints = true;
-                    //lm.lp_cost_partinioning = true;
-                    break;
-                }
-
-                case "lm_actions_dc": {
-                    h = new hlm(heuristicProblem);
-                    ((hlm) h).smart_intersection = true;
-                    ((hlm) h).lp_cost_partinioning = true;
-                    break;
-                }
-                case "lm_actions_rc_dc": {
-                    h = new hlm(heuristicProblem);
-                    ((hlm) h).smart_intersection = true;
-                    ((hlm) h).red_constraints = true;
-                    ((hlm) h).lp_cost_partinioning = true;
-                    break;
-                }
-                case "lm_actions_mip": {
-                    h = new hlm(heuristicProblem);
-                    ((hlm) h).mip = true;
-                    ((hlm) h).lp_cost_partinioning = true;
-                    break;
-                }
-                case "haddabs": {
-                    //searchEngine.setupHeuristic(new habs_add(heuristicProblem, Integer.MAX_VALUE));
-                    h = new habs_add(heuristicProblem, Integer.MAX_VALUE);
-                    ((habs_add) h).setMetric(heuristicProblem.getMetric());
-                    ((habs_add) h).additive_h = true;
-                    ((habs_add) h).midPointSampling = true;
-                    ((habs_add) h).planExtraction = false;
-                    break;
-                }
-                case "hffabs": {
-                    h = new habs_add(heuristicProblem, Integer.MAX_VALUE);
-                    ((habs_add) h).setMetric(heuristicProblem.getMetric());
-                    ((habs_add) h).additive_h = true;
-                    ((habs_add) h).midPointSampling = true;
-                    ((habs_add) h).planExtraction = true;
-                    break;
-                }
-
-                case "haddabs2": {
-                    h = new habs_add(heuristicProblem, 2);
-
-                    ((habs_add) h).setMetric(heuristicProblem.getMetric());
-                    ((habs_add) h).additive_h = true;
-                    break;
-                }
-                case "haddabsk": {
-                    h = new habs_add(heuristicProblem, num_of_subdomains);
-                    ((habs_add) h).setMetric(heuristicProblem.getMetric());
-                    ((habs_add) h).additive_h = true;
-
-                    break;
-                }
-                case "haddabsonline": {
-                    h = new habs_add(heuristicProblem, num_of_subdomains);
-                    ((habs_add) h).setMetric(heuristicProblem.getMetric());
-                    ((habs_add) h).additive_h = true;
-                    ((habs_add) h).onlineRepresentatives = true;
-
-                    break;
-                }
-                case "haddabsmidpoint": {
-                    h = new habs_add(heuristicProblem, Integer.MAX_VALUE);
-                    ((habs_add) h).setMetric(heuristicProblem.getMetric());
-                    ((habs_add) h).additive_h = true;
-                    ((habs_add) h).midPointSampling = true;
-
-                    break;
-                }
-                case "haddabsmidkpoint": {
-                    h = new habs_add(heuristicProblem, num_of_subdomains);
-                    ((habs_add) h).setMetric(heuristicProblem.getMetric());
-                    ((habs_add) h).additive_h = true;
-                    ((habs_add) h).midPointSampling = true;
-
-                    break;
-                }
-
-                case "blind": {
-                    h = new blindHeuristic(heuristicProblem);
-                    break;
-                }
-                case "gc": {
-                    h = new GoalCounting(heuristicProblem);
-                    break;
-                }
-                case "gce": {
-                    h = new GoalCounting(heuristicProblem, true);
-                    break;
-                }
-                default:
-                    break;
-            }
+            setHeuristic();
         }
     }
 
-    private SimplePlan search() throws Exception {
+    private LinkedList<Pair<Float, Object>> search() throws Exception {
 
-        LinkedList rawPlan = null;//raw list of actions returned by the search strategies
+        LinkedList<Pair<Float,Object>> rawPlan = null;//raw list of actions returned by the search strategies
 
-        final PDDLSearchEngine searchEngine = new PDDLSearchEngine(h); //manager of the search strategies
+        final PDDLSearchEngine searchEngine = new PDDLSearchEngine(h,problem); //manager of the search strategies
         Runtime.getRuntime().addShutdownHook(new Thread() {//this is to save json also when the planner is interrupted
             @Override
             public void run() {
@@ -796,19 +508,15 @@ public class ENHSP {
             }
         });
         if (pddlPlus) {
-            searchEngine.executionDelta = Float.parseFloat(delta_t);
+            searchEngine.executionDelta = Float.parseFloat(deltaExecution);
             searchEngine.processes = true;
-            searchEngine.planningDelta = Float.parseFloat(delta_max);
+            searchEngine.planningDelta = Float.parseFloat(deltaPlanning);
         }
 
-        if (debug > 0) {
-            searchEngine.getHeuristic().debug = debug;
-            searchEngine.debugLevel = debug;
-        }
         searchEngine.saveSearchTreeAsJson = saving_json;
 
-        if (break_ties != null) {
-            switch (break_ties) {
+        if (tieBreaking != null) {
+            switch (tieBreaking) {
                 case "smaller_g":
                     searchEngine.tbRule = SearchEngine.TieBreaking.LOWERG;
                     break;
@@ -820,7 +528,7 @@ public class ENHSP {
                     break;
             }
         } else {//the following is the arbitrary setting
-            break_ties = "arbitrary";
+            tieBreaking = "arbitrary";
             searchEngine.tbRule = SearchEngine.TieBreaking.ARBITRARY;
 
         }
@@ -846,167 +554,102 @@ public class ENHSP {
             searchEngine.depthLimit = Float.POSITIVE_INFINITY;
         }
 
-        searchEngine.helpfulActionsPruning = hh_pruning;
-        searchEngine.getHeuristic().helpful_actions_computation = hh_pruning;
-
-        if ("ehc".equals(search_engine)) {
-            System.out.println("Running Enforced Hill Climbing (BFS)");
-            searchEngine.forgettingEhc = true;
-            rawPlan = searchEngine.enforced_hill_climbing(getProblem());
-        } else if ("uehc".equals(search_engine)) {
-            System.out.println("Running Uniform Search Enforced Hill Climbing (BFS)");
-            searchEngine.forgettingEhc = true;
-            rawPlan = searchEngine.enforced_hill_climbing(getProblem(), SearchEngine.Explorator.WASTAR);
-        } else if ("ehc_ha".equals(search_engine)) {
-            System.out.println("Running Enforced Hill Climbing (BFS) with Helpful Actions");
-            searchEngine.getHeuristic().helpful_actions_computation = true;
-            searchEngine.helpfulActionsPruning = true;
-            rawPlan = searchEngine.enforced_hill_climbing(getProblem());
-        } else if ("ehc_dfs".equals(search_engine)) {
-            System.out.println("Running Enforced Hill Climbing (DFS)");
-            searchEngine.bfsTieBreaking = false;
-            rawPlan = searchEngine.enforced_hill_climbing(getProblem());
-        } else if ("WAStar".equals(search_engine)) {
+        System.out.println("Helpful Action Pruning Activated");
+        searchEngine.helpfulActionsPruning = helpfulActionsPruning;
+        if ("WAStar".equals(searchEngineString)) {
             System.out.println("Running WA-STAR");
             rawPlan = searchEngine.WAStar(getProblem(), timeOut);
-        } else if ("wa_star_4".equals(search_engine)) {
+        } else if ("wa_star_4".equals(searchEngineString)) {
             System.out.println("Running greedy WA-STAR with hw = 4");
             searchEngine.setWH(4);
             rawPlan = searchEngine.WAStar(getProblem());
-        } else if ("gbfs".equals(search_engine)) {
+        } else if ("gbfs".equals(searchEngineString)) {
             System.out.println("Running Greedy Best First Search");
             if (gw == null) {
                 searchEngine.setWG(0);
             }
             rawPlan = searchEngine.greedy_best_first_search(getProblem(), timeOut);
-        } else if ("gbfs_ha".equals(search_engine)) {
+        } else if ("gbfs_ha".equals(searchEngineString)) {
             System.out.println("Running Greedy Best First Search with Helpful Actions");
-            searchEngine.getHeuristic().helpful_actions_computation = true;
-            searchEngine.helpfulActionsPruning = true;
             if (gw == null) {
                 searchEngine.setWG(0);
             }
             rawPlan = searchEngine.greedy_best_first_search(getProblem(), timeOut);
-        } else if ("gbfs_cha".equals(search_engine)) {
-            System.out.println("Running Greedy Best First Search with Conservative Helpful Actions");
-            searchEngine.getHeuristic().helpful_actions_computation = true;
-            searchEngine.getHeuristic().allAchieverActions = true;
-            searchEngine.helpfulActionsPruning = true;
-            if (gw == null) {
-                searchEngine.setWG(0);
-            }
-            rawPlan = searchEngine.greedy_best_first_search(getProblem());
-        } else if ("dfs".equals(search_engine)) {
-            System.out.println("Running Depth First Search");
-            heuristic = "dfs";
-            searchEngine.bfsTieBreaking = false;
-            rawPlan = searchEngine.blindSearch(getProblem());
-        } else if ("brfs".equals(search_engine)) {
-            System.out.println("Running Uniform Cost Search");
-            heuristic = "brfs";
-            searchEngine.bfsTieBreaking = true;
-            rawPlan = searchEngine.blindSearch(getProblem());
-        } else if ("ida".equals(search_engine)) {
-            System.out.println("IDA* (Experimental)");
-            searchEngine.bfsTieBreaking = true;
-            rawPlan = searchEngine.idastar(getProblem(), true, Long.MAX_VALUE);
-        } else if ("idaMem".equals(search_engine)) {
-            System.out.println("IDA* (Experimental) with Memory");
-            searchEngine.bfsTieBreaking = true;
-            rawPlan = searchEngine.idastar(getProblem(), true, false, true, Long.MAX_VALUE);
-        } else if ("dfsbb".equals(search_engine)) {
-            System.out.println("DFSBnB* (Experimental)");
-            searchEngine.bfsTieBreaking = true;
-            rawPlan = searchEngine.dfsbnb(getProblem());
-        } else if ("dfsbbm".equals(search_engine)) {
-            System.out.println("DFSBnB* (Experimental)");
-            searchEngine.bfsTieBreaking = true;
-            rawPlan = searchEngine.dfsbnb(getProblem(), true);
-        } else if ("manual".equals(search_engine)){
-//            
-//            SimplePlan sp = new SimplePlan(domain, getProblem(), false, pddlPlus);
-//            sp.parseSolution(inputPlan);
-//            rawPlan = sp
-        }else{
-            System.out.println("Strategy is not correct");
-            System.exit(-1);
+        } else if ("ida".equals(searchEngineString)) {
+            System.out.println("Running IDAStar");
+            rawPlan = searchEngine.idastar(getProblem(),true);
+        }else{     
+            throw new RuntimeException("Search strategy is not correct");
         }
+        endGValue = searchEngine.currentG;
 
-        overal_planning_time = (System.currentTimeMillis() - very_start);
-        SimplePlan sp = validate(searchEngine, rawPlan);
-        printInfo(sp, searchEngine);
-        return sp;
+        overallPlanningTime = (System.currentTimeMillis() - overallStart);
+        //SimplePlan sp = validate(searchEngine, rawPlan);
+//        if (savePlan != null) {
+//            enhspUtil.ENHSPUtils.savePlan(new LinkedList<Pair<Float,TransitionGround>>(), problem, savePlan);
+//        }
+        boolean valid = true;
+        if (printTrace) {
+            String fileName = getProblem().getPddlFileReference() + "_search_" + searchEngineString + "_h_" + heuristic + "_break_ties_" + tieBreaking + ".npt";
+            valid = searchEngine.validate(rawPlan, Float.parseFloat(deltaValidation), fileName);
+            System.out.println("Numeric Plan Trace saved to "+fileName);
+            System.out.println("Plan is valid: " + valid);
+        } else if (internalValidation = false) {
+            valid = searchEngine.validate(rawPlan, Float.parseFloat(deltaValidation));
+        }
+        printInfo(rawPlan, searchEngine);
+        return rawPlan;
     }
 
-    private SimplePlan validate(PDDLSearchEngine searchEngine, LinkedList raw_plan) throws CloneNotSupportedException, Exception {
-        SimplePlan sp = new SimplePlan(domain, getProblem(), false, pddlPlus);  //placeholder for the plan to be found
-        PDDLState lastState = null;
-        System.out.println("Starting Validation");
-        if (raw_plan != null) {// Print some useful information on the outcome of the planning process
-            sp.print_trace = print_trace;
-            if (!pddlPlus) {
-                sp.addAll(raw_plan);
-                lastState = sp.execute((PDDLState) getProblem().getInit(), getProblem().globalConstraints);
-                System.out.println("(Pddl2.1 semantics) Plan is valid:" + lastState.satisfy(getProblem().getGoals()));
-            } else { //This is when you have also autonomous processes going on
-                PddlDomain validationDomain = new PddlDomain(domainFile);
-                EPddlProblem validationProblem = new EPddlProblem(problemFile, validationDomain.getConstants(), validationDomain.getTypes(),validationDomain);
-                //this is when you have processes
-                validationProblem.groundingActionProcessesConstraints();
-//                validationProblem.syncAllVariablesAndUpdateCollections(getProblem());
-                validationProblem.setDeltaTimeVariable(delta_val);
-                validationProblem.simplifyAndSetupInit(true);
-                Float time = sp.build_pddl_plus_plan(raw_plan, epsilon);
-                lastState = sp.execute((PDDLState) validationProblem.getInit(), validationProblem.globalConstraints, validationProblem.getProcessesSet(), validationProblem.getEventsSet(), searchEngine.planningDelta, Float.parseFloat(delta_val), time);
-//                System.out.println("Last PDDLState:"+last_state.pddlPrint());
-                boolean goal_reached = lastState.satisfy(getProblem().getGoals());
-                System.out.println("(Pddl+ semantics) Plan is valid:" + goal_reached);
-            }
-        }else{
-            return null;
-        }
-        if (lastState != null) {
-            if (!pddlPlus) {
-                sp.setDuration(sp.size());
-            } else {
-                sp.setDuration(lastState.time);//                System.out.println("Duration Via Simulation:"+String.format("%.7f",last_state.getTime().getNumber()));
-            }
-        }
-        return sp;
-    }
+//    private SimplePlan validate(PDDLSearchEngine searchEngine, LinkedList raw_plan) throws CloneNotSupportedException, Exception {
+//        SimplePlan sp = new SimplePlan(domain, getProblem(), false, pddlPlus);  //placeholder for the plan to be found
+//        PDDLState lastState = null;
+//        System.out.println("Starting Validation");
+//        if (raw_plan != null) {// Print some useful information on the outcome of the planning process
+//            sp.print_trace = print_trace;
+//            if (!pddlPlus) {
+//                sp.addAll(raw_plan);
+//                lastState = sp.execute((PDDLState) getProblem().getInit(), getProblem().globalConstraints);
+//                System.out.println("(Pddl2.1 semantics) Plan is valid:" + lastState.satisfy(getProblem().getGoals()));
+//            } else { //This is when you have also autonomous processes going on
+//                PddlDomain validationDomain = new PddlDomain(domainFile);
+//                EPddlProblem validationProblem = new EPddlProblem(problemFile, validationDomain.getConstants(), validationDomain.getTypes(),validationDomain);
+//                //this is when you have processes
+//                validationProblem.groundingActionProcessesConstraints();
+////                validationProblem.syncAllVariablesAndUpdateCollections(getProblem());
+//                validationProblem.setDeltaTimeVariable(delta_val);
+//                validationProblem.simplifyAndSetupInit(true);
+//                Float time = sp.build_pddl_plus_plan(raw_plan, epsilon);
+//                lastState = sp.execute((PDDLState) validationProblem.getInit(), validationProblem.globalConstraints, validationProblem.getProcessesSet(), validationProblem.getEventsSet(), searchEngine.planningDelta, Float.parseFloat(delta_val), time);
+////                System.out.println("Last PDDLState:"+last_state.pddlPrint());
+//                boolean goal_reached = lastState.satisfy(getProblem().getGoals());
+//                System.out.println("(Pddl+ semantics) Plan is valid:" + goal_reached);
+//            }
+//        }else{
+//            return null;
+//        }
+//        if (lastState != null) {
+//            if (!pddlPlus) {
+//                sp.setDuration(sp.size());
+//            } else {
+//                sp.setDuration(lastState.time);//                System.out.println("Duration Via Simulation:"+String.format("%.7f",last_state.getTime().getNumber()));
+//            }
+//        }
+//        return sp;
+//    }
 
-    private void printInfo(SimplePlan sp, PDDLSearchEngine searchEngine) {
+    private void printInfo(LinkedList<Pair<Float, Object>> sp, PDDLSearchEngine searchEngine) throws CloneNotSupportedException {
 
         if (sp != null) {
             System.out.println("Problem Solved");
-            if (pddlPlus) {
-                System.out.println(sp.printPDDLPlusPlan());
-            } else {
-                System.out.println(sp);
-            }
+            printPlan(sp,pddlPlus);
             System.out.println("Plan-Length:" + sp.size());
-            System.out.println("Duration:" + sp.getDuration());
-            System.out.println("Metric (Plan):" + sp.getCost());
-            if (save_plan) {
-                sp.savePlan(getProblem().getPddlFileReference() + "_c_" + heuristic + "_gw_" + gw + "_hw_" + gw + "_delta_" + delta_t + ".plan", true);
-            }
-            if (print_trace) {
-                FileWriter file = null;
-                try {
-                    file = new FileWriter(getProblem().getPddlFileReference() + "_search_" + search_engine + "_h_" + heuristic + "_break_ties_" + break_ties + ".npt");
-                    //System.out.println(this.json_rep.toJSONString());
-                    file.write(sp.numeric_plan_trace.toJSONString());
-                    file.close();
-                } catch (IOException ex) {
-                    Logger.getLogger(SearchNode.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                System.out.println("Numeric Plan Trace saved");
-            }
+            planLength = sp.size();
         } else {
             System.out.println("Problem unsolvable");
         }
         System.out.println("Metric (Search):" + searchEngine.currentG);
-        System.out.println("Planning Time:" + overal_planning_time);
+        System.out.println("Planning Time:" + overallPlanningTime);
         System.out.println("Heuristic Time:" + searchEngine.getHeuristicCpuTime());
         System.out.println("Search Time:" + searchEngine.getOverallSearchTime());
         System.out.println("Expanded Nodes:" + searchEngine.getNodesExpanded());
@@ -1014,11 +657,24 @@ public class ENHSP {
         System.out.println("Fixed constraint violations during search (zero-crossing):" + searchEngine.constraintsViolations);
         System.out.println("Number of Dead-Ends detected:" + searchEngine.deadEndsDetected);
         System.out.println("Number of Duplicates detected:" + searchEngine.duplicatesNumber);
-        if (searchEngine.getHeuristic() instanceof quasi_hm) {
-            System.out.println("Number of LP invocations:" + ((quasi_hm) searchEngine.getHeuristic()).n_lp_invocations);
-        }
+//        if (searchEngine.getHeuristic() instanceof quasi_hm) {
+//            System.out.println("Number of LP invocations:" + ((quasi_hm) searchEngine.getHeuristic()).n_lp_invocations);
+//        }
         if (saving_json) {
             searchEngine.searchSpaceHandle.print_json(getProblem().getPddlFileReference() + ".sp_log");
         }
     }
+
+    private void printPlan(LinkedList<Pair<Float,Object>> plan, boolean temporal) {
+        float i = 0f;
+      
+        for (Pair<Float,Object> ele : plan) {
+            if (!temporal) {
+                System.out.print(i+": "+ele.getRight()+"\n");
+                i++;
+            } else {
+                System.out.print(ele.getLeft()+": "+ele.getRight()+"\n");
+            }
+        }
+    }    
 }

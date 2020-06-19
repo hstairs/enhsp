@@ -1,3 +1,4 @@
 #!/bin/bash
 
-javac -classpath "$(pwd)"/src/:"$(pwd)"/libs/* src/ENHSP.java
+javac -d out -classpath "$(pwd)"/src/:"$(pwd)"/libs/*  src/*.java
+jar --create --file  enhsp.jar --manifest manifest.mf -p libs/ -C out/ . libs/

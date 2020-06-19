@@ -3,4 +3,8 @@ image: "enhsp-20"
 before_script:
   - apt-get update -qq && apt-get install -y openjdk-14-jre
 
+enhsp:
+  script:
+    - ls
+
 

@@ -1,5 +1,4 @@
 #!/bin/bash
-
 rm -r out 2> /dev/null
 rm -r enhsp-dist 2> /dev/null
 javac -d out -classpath "$(pwd)"/src/:"$(pwd)"/libs/*:"$(pwd)"/libs/ src/planners/*.java src/*.java

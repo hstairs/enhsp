@@ -4,7 +4,7 @@ rm -r out 2> /dev/null
 rm -r enhsp-dist 2> /dev/null
 mkdir out
 javac -d out -classpath "$(pwd)"/src/:"$(pwd)"/libs/*:"$(pwd)"/libs/ src/*.java
-jar -c -f  enhsp.jar -m manifest.mf -C out/ . 
+jar -cfm  enhsp.jar manifest.mf -C out/ . 
 mkdir enhsp-dist
 cp -r libs/ enhsp-dist/
 cp enhsp.jar enhsp-dist/

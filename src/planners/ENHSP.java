@@ -9,7 +9,6 @@ import com.hstairs.ppmajal.pddl.heuristics.advanced.H1;
 import com.hstairs.ppmajal.problem.EPddlProblem;
 import com.hstairs.ppmajal.problem.PDDLSearchEngine;
 import com.hstairs.ppmajal.search.SearchEngine;
-import com.hstairs.ppmajal.transition.TransitionGround;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.LinkedList;
@@ -105,24 +104,24 @@ public class ENHSP {
     
     public Pair<PddlDomain,EPddlProblem> parseDomainProblem(String domainFile, String problemFile, String delta, PrintStream out){
         try {
-            final PddlDomain domain = new PddlDomain(domainFile);
+            final PddlDomain localDomain = new PddlDomain(domainFile);
             //domain.substituteEqualityConditions();
-            pddlPlus = !domain.getProcessesSchema().isEmpty() || !domain.eventsSchema.isEmpty();
+            pddlPlus = !localDomain.getProcessesSchema().isEmpty() || !localDomain.eventsSchema.isEmpty();
             out.println("Domain parsed");
-            final EPddlProblem problem = new EPddlProblem(problemFile, domain.getConstants(), domain.types, domain, out, metricffGrounding);
-            if (!domain.getProcessesSchema().isEmpty()){
-                problem.setDeltaTimeVariable(delta);
+            final EPddlProblem localProblem = new EPddlProblem(problemFile, localDomain.getConstants(), localDomain.types, localDomain, out, metricffGrounding);
+            if (!localDomain.getProcessesSchema().isEmpty()){
+                localProblem.setDeltaTimeVariable(delta);
             }
             //this second model is the one used in the heuristic. This can potentially be different from the one used in the execution model. Decoupling it
             //allows us to a have a finer control on the machine
             //the third one is the validation model, where, also in this case we test our plan against a potentially more accurate description
             out.println("Problem parsed");
             out.println("Grounding..");
-            problem.groundingSimplication(aibrPreprocessing,stopAfterGrounding); 
+            localProblem.groundingSimplication(aibrPreprocessing,stopAfterGrounding); 
             if (stopAfterGrounding){
                 System.exit(1);
             }
-            return Pair.of(domain, problem);
+            return Pair.of(localDomain, localProblem);
         } catch (Exception ex) {
             Logger.getLogger(ENHSP.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -147,7 +146,6 @@ public class ENHSP {
                 copyOfTheProblem = true;
             } else {
                 heuristicProblem = problem;
-
             }
         } catch (Exception ex) {
             ex.printStackTrace();

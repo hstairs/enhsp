@@ -8,6 +8,7 @@ import com.hstairs.ppmajal.pddl.heuristics.advanced.GoalCounting;
 import com.hstairs.ppmajal.pddl.heuristics.advanced.H1;
 import com.hstairs.ppmajal.problem.EPddlProblem;
 import com.hstairs.ppmajal.problem.PDDLSearchEngine;
+import com.hstairs.ppmajal.problem.PDDLState;
 import com.hstairs.ppmajal.search.SearchEngine;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -223,6 +224,8 @@ public class ENHSP {
         options.addOption("anytime", false, "Run in anytime modality. Incrementally tries to find an upper bound. Does not stop until the user decides so");
         options.addOption("timeout", true, "Timeout for anytime modality");
         options.addOption("stopgro", false, "Stop After Grounding");
+        options.addOption("ival", false, "Internal Validation");
+
 
         CommandLineParser parser = new DefaultParser();
         try {
@@ -255,6 +258,8 @@ public class ENHSP {
             }else{
                 metricffGrounding = "internal";
             }
+            internalValidation = cmd.hasOption("ival");
+            
             deltaExecution = cmd.getOptionValue("de");
             if (deltaExecution == null) {
                 deltaExecution = "1.0";
@@ -592,7 +597,7 @@ public class ENHSP {
             valid = searchEngine.validate(rawPlan, Float.parseFloat(deltaValidation), fileName);
             System.out.println("Numeric Plan Trace saved to "+fileName);
             System.out.println("Plan is valid: " + valid);
-        } else if (internalValidation = false) {
+        } else if (internalValidation) {
             valid = searchEngine.validate(rawPlan, Float.parseFloat(deltaValidation));
         }
         printInfo(rawPlan, searchEngine);
@@ -637,7 +642,7 @@ public class ENHSP {
 //    }
 
     private void printInfo(LinkedList<Pair<Float, Object>> sp, PDDLSearchEngine searchEngine) throws CloneNotSupportedException {
-
+        
         if (sp != null) {
             System.out.println("Problem Solved");
             printPlan(sp,pddlPlus);
@@ -645,6 +650,10 @@ public class ENHSP {
             planLength = sp.size();
         } else {
             System.out.println("Problem unsolvable");
+        }
+        if (pddlPlus && sp != null){
+            PDDLState s = (PDDLState) searchEngine.getLastState();
+            System.out.println("Elapsed Time: "+ s.time );
         }
         System.out.println("Metric (Search):" + searchEngine.currentG);
         System.out.println("Planning Time:" + overallPlanningTime);
@@ -665,13 +674,13 @@ public class ENHSP {
 
     private void printPlan(LinkedList<Pair<Float,Object>> plan, boolean temporal) {
         float i = 0f;
-      
         for (Pair<Float,Object> ele : plan) {
             if (!temporal) {
                 System.out.print(i+": "+ele.getRight()+"\n");
                 i++;
             } else {
-                System.out.print(ele.getLeft()+": "+ele.getRight()+"\n");
+                System.out.print(i+": "+ele.getRight()+"\n");
+                i = ele.getLeft();
             }
         }
     }    

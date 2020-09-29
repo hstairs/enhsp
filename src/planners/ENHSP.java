@@ -23,6 +23,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang3.tuple.Pair;
 import com.hstairs.ppmajal.search.SearchHeuristic;
+import com.hstairs.ppmajal.transition.TransitionGround;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import java.util.Collection;
 import java.util.Map;
@@ -93,6 +94,7 @@ public class ENHSP {
     private String metricffGrounding;
     private boolean naiveGrounding;
     private boolean stopAfterGrounding;
+    private boolean printEvents;
 
     public ENHSP(boolean copyProblem) {
         copyOfTheProblem = copyProblem;
@@ -101,16 +103,15 @@ public class ENHSP {
     public int getPlanLength() {
         return planLength;
     }
-    
-    
-    public Pair<PddlDomain,EPddlProblem> parseDomainProblem(String domainFile, String problemFile, String delta, PrintStream out){
+
+    public Pair<PddlDomain, EPddlProblem> parseDomainProblem(String domainFile, String problemFile, String delta, PrintStream out) {
         try {
             final PddlDomain localDomain = new PddlDomain(domainFile);
             //domain.substituteEqualityConditions();
             pddlPlus = !localDomain.getProcessesSchema().isEmpty() || !localDomain.eventsSchema.isEmpty();
             out.println("Domain parsed");
             final EPddlProblem localProblem = new EPddlProblem(problemFile, localDomain.getConstants(), localDomain.types, localDomain, out, metricffGrounding);
-            if (!localDomain.getProcessesSchema().isEmpty()){
+            if (!localDomain.getProcessesSchema().isEmpty()) {
                 localProblem.setDeltaTimeVariable(delta);
             }
             //this second model is the one used in the heuristic. This can potentially be different from the one used in the execution model. Decoupling it
@@ -118,8 +119,8 @@ public class ENHSP {
             //the third one is the validation model, where, also in this case we test our plan against a potentially more accurate description
             out.println("Problem parsed");
             out.println("Grounding..");
-            localProblem.groundingSimplication(aibrPreprocessing,stopAfterGrounding); 
-            if (stopAfterGrounding){
+            localProblem.groundingSimplication(aibrPreprocessing, stopAfterGrounding);
+            if (stopAfterGrounding) {
                 System.exit(1);
             }
             return Pair.of(localDomain, localProblem);
@@ -152,11 +153,13 @@ public class ENHSP {
             ex.printStackTrace();
         }
     }
-    public void configurePlanner(){
+
+    public void configurePlanner() {
         if (planner != null) {
             setPlanner();
         }
     }
+
     public void planning() {
 
         try {
@@ -178,7 +181,7 @@ public class ENHSP {
             Logger.getLogger(ENHSP.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-    }      
+    }
 
     public void parseInput(String[] args) {
         Options options = new Options();
@@ -198,26 +201,26 @@ public class ENHSP {
                 + "WAStar, WA* (f(n) = g(n) + h_w*h(n))\n"
                 + "wa_star_4, WA* (f(n) = g(n) + 4*h(n))\n");
         options.addOption("ties", true, "tie-breaking (default is arbitrary): larger_g, smaller_g, arbitrary");
-        options.addOption("dp","delta_planning", true, "planning decision executionDelta: float");
-        options.addOption("de","delta_execuction", true, "planning execution executionDelta: float");
-        options.addOption("dh","delta_heuristic", true, "planning heuristic executionDelta: float");
-        options.addOption("dv","delta_validation", true, "validation executionDelta: float");
-        options.addOption("d","delta", true, "Override other delta_<planning,execuction,validation,heuristic> configurations: float");
+        options.addOption("dp", "delta_planning", true, "planning decision executionDelta: float");
+        options.addOption("de", "delta_execuction", true, "planning execution executionDelta: float");
+        options.addOption("dh", "delta_heuristic", true, "planning heuristic executionDelta: float");
+        options.addOption("dv", "delta_validation", true, "validation executionDelta: float");
+        options.addOption("d", "delta", true, "Override other delta_<planning,execuction,validation,heuristic> configurations: float");
         options.addOption("epsilon", true, "epsilon separation: float");
         options.addOption("wg", true, "g-values weight: float");
         options.addOption("wh", true, "h-values weight: float");
         options.addOption("sjr", false, "save state space explored in json file");
-        options.addOption("ha","helpful-actions", true, "activate helpful actions pruning");
-        options.addOption("ht","helpful-transitions", true, "activate up-to-macro actions");
+        options.addOption("ha", "helpful-actions", true, "activate helpful actions pruning");
+        options.addOption("pe", "print-events-plan", false, "activate printing of events");
+
+        options.addOption("ht", "helpful-transitions", true, "activate up-to-macro actions");
         options.addOption("sp", true, "Save plan. Argument is filename");
         options.addOption("pt", false, "print state trajectory (Experimental)");
         options.addOption("im", false, "Ignore Metric in the heuristic");
         options.addOption("dap", false, "Disable Aibr Preprocessing");
-        options.addOption("red","redundant_constraints", true, "Choose mechanism for redundant constraints generation among, "
+        options.addOption("red", "redundant_constraints", true, "Choose mechanism for redundant constraints generation among, "
                 + "no, brute and smart. No redundant constraints generation is the default");
-        options.addOption("gro","grounding", true, "Activate grounding via internal mechanism, fd or metricff or internal or naive (default is internal)");
-        
-
+        options.addOption("gro", "grounding", true, "Activate grounding via internal mechanism, fd or metricff or internal or naive (default is internal)");
 
         options.addOption("dl", true, "bound on plan-cost: float (Experimental)");
         options.addOption("k", true, "maximal number of subdomains. This works in combination with haddabs: integer");
@@ -225,7 +228,6 @@ public class ENHSP {
         options.addOption("timeout", true, "Timeout for anytime modality");
         options.addOption("stopgro", false, "Stop After Grounding");
         options.addOption("ival", false, "Internal Validation");
-
 
         CommandLineParser parser = new DefaultParser();
         try {
@@ -247,19 +249,19 @@ public class ENHSP {
                 deltaPlanning = "1.0";
             }
             String optionValue = cmd.getOptionValue("red");
-            if (optionValue == null){
+            if (optionValue == null) {
                 redundantConstraints = "no";
-            }else{
+            } else {
                 redundantConstraints = optionValue;
             }
             optionValue = cmd.getOptionValue("gro");
-            if (optionValue != null){
+            if (optionValue != null) {
                 metricffGrounding = optionValue;
-            }else{
+            } else {
                 metricffGrounding = "internal";
             }
             internalValidation = cmd.hasOption("ival");
-            
+
             deltaExecution = cmd.getOptionValue("de");
             if (deltaExecution == null) {
                 deltaExecution = "1.0";
@@ -301,11 +303,11 @@ public class ENHSP {
                 numSubdomains = 2;
             }
 
-            
             gw = cmd.getOptionValue("wg");
             hw = cmd.getOptionValue("wh");
             saving_json = cmd.hasOption("sjr");
             helpfulActionsPruning = cmd.getOptionValue("ha") != null && "true".equals(cmd.getOptionValue("ha"));
+            printEvents = cmd.hasOption("pe");
             printTrace = cmd.hasOption("pt");
             savePlan = cmd.getOptionValue("sp");
             anyTime = cmd.hasOption("anytime");
@@ -342,20 +344,20 @@ public class ENHSP {
     public EPddlProblem getProblem() {
         return problem;
     }
-    
-    public void printStats(){
-             System.out.println("Grounding and Simplification finished");
+
+    public void printStats() {
+        System.out.println("Grounding and Simplification finished");
         System.out.println("|A|:" + getProblem().getActions().size());
         System.out.println("|P|:" + getProblem().getProcessesSet().size());
         System.out.println("|E|:" + getProblem().getEventsSet().size());
-        if (pddlPlus){
+        if (pddlPlus) {
             System.out.println("Delta time heuristic model:" + deltaHeuristic);
             System.out.println("Delta time planning model:" + deltaPlanning);
             System.out.println("Delta time search-execution model:" + deltaExecution);
             System.out.println("Delta time validation model:" + deltaValidation);
-        }   
+        }
     }
-    
+
     private void setPlanner() {
         helpfulTransitions = false;
         helpfulActionsPruning = false;
@@ -439,28 +441,26 @@ public class ENHSP {
             redConstraint = h1.generateSmartRedundantConstraints();
         }
 
-        
-        
         switch (heuristic) {
             case "gc": {
                 h = new GoalCounting(heuristicProblem);
                 break;
             }
             case "hadd": {
-                h = new H1(heuristicProblem, true, false, false, redundantConstraints, false, false, false, false,redConstraint);
+                h = new H1(heuristicProblem, true, false, false, redundantConstraints, false, false, false, false, redConstraint);
                 break;
-            } 
+            }
             case "hradd": {
                 h = new H1(heuristicProblem, true, false, false, "brute", false, false, false, false);
                 break;
             }
-                 
+
             case "hrmax": {
                 h = new H1(heuristicProblem, false, false, false, "brute", false, false, false, false);
                 break;
             }
             case "hmax": {
-                h = new H1(heuristicProblem, false, false, false, redundantConstraints, false, false, false, false,redConstraint);
+                h = new H1(heuristicProblem, false, false, false, redundantConstraints, false, false, false, false, redConstraint);
                 break;
             }
             case "hmrp": {
@@ -483,11 +483,11 @@ public class ENHSP {
                 h = new BlindHeuristic(heuristicProblem);
                 break;
         }
-        
+
     }
 
     private void configureHeuristic() throws Exception {
-        
+
         h = null;
         //next is highly customized configuration
         if (getHeuristicFunction() != null) {
@@ -499,9 +499,9 @@ public class ENHSP {
 
     private LinkedList<Pair<Float, Object>> search() throws Exception {
 
-        LinkedList<Pair<Float,Object>> rawPlan = null;//raw list of actions returned by the search strategies
+        LinkedList<Pair<Float, Object>> rawPlan = null;//raw list of actions returned by the search strategies
 
-        final PDDLSearchEngine searchEngine = new PDDLSearchEngine(h,problem); //manager of the search strategies
+        final PDDLSearchEngine searchEngine = new PDDLSearchEngine(h, problem); //manager of the search strategies
         Runtime.getRuntime().addShutdownHook(new Thread() {//this is to save json also when the planner is interrupted
             @Override
             public void run() {
@@ -580,8 +580,8 @@ public class ENHSP {
             rawPlan = searchEngine.greedy_best_first_search(getProblem(), timeOut);
         } else if ("ida".equals(searchEngineString)) {
             System.out.println("Running IDAStar");
-            rawPlan = searchEngine.idastar(getProblem(),true);
-        }else{     
+            rawPlan = searchEngine.idastar(getProblem(), true);
+        } else {
             throw new RuntimeException("Search strategy is not correct");
         }
         endGValue = searchEngine.currentG;
@@ -595,7 +595,7 @@ public class ENHSP {
         if (printTrace) {
             String fileName = getProblem().getPddlFileReference() + "_search_" + searchEngineString + "_h_" + heuristic + "_break_ties_" + tieBreaking + ".npt";
             valid = searchEngine.validate(rawPlan, Float.parseFloat(deltaValidation), fileName);
-            System.out.println("Numeric Plan Trace saved to "+fileName);
+            System.out.println("Numeric Plan Trace saved to " + fileName);
             System.out.println("Plan is valid: " + valid);
         } else if (internalValidation) {
             valid = searchEngine.validate(rawPlan, Float.parseFloat(deltaValidation));
@@ -640,20 +640,19 @@ public class ENHSP {
 //        }
 //        return sp;
 //    }
-
     private void printInfo(LinkedList<Pair<Float, Object>> sp, PDDLSearchEngine searchEngine) throws CloneNotSupportedException {
-        
+
         if (sp != null) {
             System.out.println("Problem Solved");
-            printPlan(sp,pddlPlus);
+            printPlan(sp, pddlPlus, (PDDLState) searchEngine.getLastState());
             System.out.println("Plan-Length:" + sp.size());
             planLength = sp.size();
         } else {
             System.out.println("Problem unsolvable");
         }
-        if (pddlPlus && sp != null){
+        if (pddlPlus && sp != null) {
             PDDLState s = (PDDLState) searchEngine.getLastState();
-            System.out.println("Elapsed Time: "+ s.time );
+            System.out.println("Elapsed Time: " + s.time);
         }
         System.out.println("Metric (Search):" + searchEngine.currentG);
         System.out.println("Planning Time:" + overallPlanningTime);
@@ -672,16 +671,41 @@ public class ENHSP {
         }
     }
 
-    private void printPlan(LinkedList<Pair<Float,Object>> plan, boolean temporal) {
+    private void printPlan(LinkedList<Pair<Float, Object>> plan, boolean temporal, PDDLState par) {
         float i = 0f;
-        for (Pair<Float,Object> ele : plan) {
+        Pair<Float, Object> previous = null;
+        boolean startProcess = false;
+        int size = plan.size();
+        int  j = 0;
+        for (Pair<Float, Object> ele : plan) {
+            j++;
             if (!temporal) {
-                System.out.print(i+": "+ele.getRight()+"\n");
+                System.out.print(i + ": " + ele.getRight() + "\n");
                 i++;
             } else {
-                System.out.print(i+": "+ele.getRight()+"\n");
-                i = ele.getLeft();
+                TransitionGround t = (TransitionGround) ele.getRight();
+                if (t.getSemantics() == TransitionGround.Semantics.PROCESS) {
+                    if (!startProcess) {
+                        previous = ele;
+                        startProcess = true;
+                    }
+                    if (j == size){
+                        System.out.println(previous.getLeft() + ": -----waiting---- " + "[" + par.time + "]");
+                    }
+                } else {
+                    if (t.getSemantics() != TransitionGround.Semantics.EVENT || printEvents) {
+                        if (startProcess) {
+                            startProcess = false;
+                            System.out.println(previous.getLeft() + ": -----waiting---- " + "[" + ele.getLeft() + "]");
+                        }
+                        System.out.print(ele.getLeft() + ": " + ele.getRight() + "\n");
+                    }else{
+                        if (j == size) {
+                            System.out.println(previous.getLeft() + ": -----waiting---- " + "[" + ele.getLeft() + "]");
+                        }
+                    }
+                }
             }
         }
-    }    
+    }
 }

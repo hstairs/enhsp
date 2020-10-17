@@ -25,8 +25,14 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.hstairs.ppmajal.search.SearchHeuristic;
 import com.hstairs.ppmajal.transition.TransitionGround;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import static jdk.internal.org.jline.utils.Colors.s;
 
 /*
  * Copyright (C) 2016-2017 Enrico Scala. Email enricos83@gmail.com.
@@ -644,7 +650,7 @@ public class ENHSP {
 
         if (sp != null) {
             System.out.println("Problem Solved");
-            printPlan(sp, pddlPlus, (PDDLState) searchEngine.getLastState());
+            printPlan(sp, pddlPlus, (PDDLState) searchEngine.getLastState(),savePlan);
             System.out.println("Plan-Length:" + sp.size());
             planLength = sp.size();
         } else {
@@ -671,9 +677,10 @@ public class ENHSP {
         }
     }
 
-    private void printPlan(LinkedList<Pair<Float, Object>> plan, boolean temporal, PDDLState par) {
+    private void printPlan(LinkedList<Pair<Float, Object>> plan, boolean temporal, PDDLState par, String fileName) {
         float i = 0f;
         Pair<Float, Object> previous = null;
+        List<String> fileContent = new ArrayList();
         boolean startProcess = false;
         int size = plan.size();
         int  j = 0;
@@ -681,6 +688,10 @@ public class ENHSP {
             j++;
             if (!temporal) {
                 System.out.print(i + ": " + ele.getRight() + "\n");
+                if (fileName != null){
+                    TransitionGround t = (TransitionGround) ele.getRight();
+                    fileContent.add(t.toString());
+                }
                 i++;
             } else {
                 TransitionGround t = (TransitionGround) ele.getRight();
@@ -689,7 +700,7 @@ public class ENHSP {
                         previous = ele;
                         startProcess = true;
                     }
-                    if (j == size){
+                    if (j == size) {
                         System.out.println(previous.getLeft() + ": -----waiting---- " + "[" + par.time + "]");
                     }
                 } else {
@@ -699,12 +710,22 @@ public class ENHSP {
                             System.out.println(previous.getLeft() + ": -----waiting---- " + "[" + ele.getLeft() + "]");
                         }
                         System.out.print(ele.getLeft() + ": " + ele.getRight() + "\n");
-                    }else{
+                        if (fileName != null) {
+                            fileContent.add(ele.getLeft() + ": "+ t.toString());
+                        }
+                    } else {
                         if (j == size) {
                             System.out.println(previous.getLeft() + ": -----waiting---- " + "[" + ele.getLeft() + "]");
                         }
                     }
                 }
+            }
+        }
+        if (fileName != null) {
+            try {
+                Files.write(Path.of(fileName), fileContent);
+            } catch (IOException ex) {
+                Logger.getLogger(ENHSP.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }

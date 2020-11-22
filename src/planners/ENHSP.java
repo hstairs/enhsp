@@ -6,6 +6,7 @@ import com.hstairs.ppmajal.pddl.heuristics.BlindHeuristic;
 import com.hstairs.ppmajal.pddl.heuristics.advanced.Aibr;
 import com.hstairs.ppmajal.pddl.heuristics.advanced.GoalCounting;
 import com.hstairs.ppmajal.pddl.heuristics.advanced.H1;
+import com.hstairs.ppmajal.pddl.heuristics.advanced.LM;
 import com.hstairs.ppmajal.problem.EPddlProblem;
 import com.hstairs.ppmajal.problem.PDDLSearchEngine;
 import com.hstairs.ppmajal.problem.PDDLState;
@@ -479,6 +480,23 @@ public class ENHSP {
             case "aibr": {
                 System.out.println("AIBR selected");
                 h = new Aibr(heuristicProblem);
+                break;
+            }
+            case "hlm-count": {
+                System.out.println("HLM selected");
+                h = new LM(heuristicProblem);
+                break;
+            }
+            case "hlm-lp": {
+                System.out.println("HLM selected");
+                System.out.println(redundantConstraints);
+                h = new LM(heuristicProblem, "lp",redundantConstraints,"cplex");
+                break;
+            }
+            case "hlm-lp-gurobi": {
+                System.out.println("HLM selected");
+                System.out.println(redundantConstraints);
+                h = new LM(heuristicProblem, "lp",redundantConstraints,"gurobi");
                 break;
             }
             default:

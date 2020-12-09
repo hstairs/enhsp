@@ -101,6 +101,7 @@ public class ENHSP {
     private boolean naiveGrounding;
     private boolean stopAfterGrounding;
     private boolean printEvents;
+    private boolean sdac;
 
     public ENHSP(boolean copyProblem) {
         copyOfTheProblem = copyProblem;
@@ -116,7 +117,7 @@ public class ENHSP {
             //domain.substituteEqualityConditions();
             pddlPlus = !localDomain.getProcessesSchema().isEmpty() || !localDomain.eventsSchema.isEmpty();
             out.println("Domain parsed");
-            final EPddlProblem localProblem = new EPddlProblem(problemFile, localDomain.getConstants(), localDomain.types, localDomain, out, metricffGrounding);
+            final EPddlProblem localProblem = new EPddlProblem(problemFile, localDomain.getConstants(), localDomain.types, localDomain, out, metricffGrounding, sdac);
             if (!localDomain.getProcessesSchema().isEmpty()) {
                 localProblem.setDeltaTimeVariable(delta);
             }
@@ -234,6 +235,7 @@ public class ENHSP {
         options.addOption("timeout", true, "Timeout for anytime modality");
         options.addOption("stopgro", false, "Stop After Grounding");
         options.addOption("ival", false, "Internal Validation");
+        options.addOption("sdac", false, "Activate State Dependent Action Cost (Very Experimental!)");
 
         CommandLineParser parser = new DefaultParser();
         try {
@@ -312,6 +314,7 @@ public class ENHSP {
             gw = cmd.getOptionValue("wg");
             hw = cmd.getOptionValue("wh");
             saving_json = cmd.hasOption("sjr");
+            sdac = cmd.hasOption("sdac");
             helpfulActionsPruning = cmd.getOptionValue("ha") != null && "true".equals(cmd.getOptionValue("ha"));
             printEvents = cmd.hasOption("pe");
             printTrace = cmd.hasOption("pt");

@@ -1,4 +1,10 @@
+
+**ENHSP is undergoing a number of modifications for bug fixing and improvements. An improved version of ENHSP can already be found in the ENHSP-19 branch of this repository. 
+For a more general overview of ENHSP and the different versions (ENHSP-19, ENHSP-20), have a look at ENHSP website: https://sites.google.com/view/enhsp/.
+If you want to use ENHSP for publishing experiments, please send me an [email](enricos83@gmail.com) so that I can give you the correct version.**
+
 I tried to write a easy to read README. But it could be the case that this is not as easy to read as it is supposed to be. So please send me an email if you have any question (of any kind) on the planner. My email is enricos83 at gmail dot com.
+
 
 # What is ENHSP?
 
@@ -11,7 +17,7 @@ This repository contains ENHSP, which stands for Expressive Numeric Heuristic Pl
 
 Note that the planner DOES NOT SUPPORT THE WHOLE ADL.
 
-##Novel Features and License!
+## Novel Features and License!
 This new version of ENHSP (v0.4) has been extended to support:
 1. discrete events!
 2. universal and existential quantification in formulas (action precondition, constraints and goals)
@@ -21,7 +27,7 @@ This new version of ENHSP (v0.4) has been extended to support:
 The text below can be outdated in some parts! Previous versions of the planner can be found checking out previous commits. The tag v0.3 is the last previous official version of the planner.
 License: The planner is now delivered with a [LGPL3](https://www.gnu.org/licenses/lgpl-3.0.en.html) license
 
-##Description
+## Description
 
 The planner reads in input a PDDL domain and problem file, and if you are lucky and your problem is not too complex, it provides you with a plan (a sequence of actions). In the case of planning with processes, the plan is a time-stamped plan (associated to each action, you find the time at which that instance of the action has to be executed). In dealing with autonomous processes, ENHSP discretises the problem (with a delta=1sec by default); so the plan is guaranteed to be valid only with respect to that discretisation.
 
@@ -39,7 +45,7 @@ M. Ramirez, E. Scala, P. Haslum, S. Thiebaux: **Numerical Integration and Dynami
 
 D. Li, E. Scala, P. Haslum, S. Bogomolov **Effect-Abstraction Based Relaxation for Linear Numeric Planning** In IJCAI 2018
 
-The planner builds on the PPMaJaL library, which can be found [here](https://bitbucket.org/enricode/ppmajal-expressive-pddl-java-library/admin). PPMaJaL provides parsing, data structures, heuristics and search engine for ENHSP.
+The planner builds on the PPMaJaL library, which can be found [here](https://gitlab.com/enricos83/PPMAJAL-Expressive-PDDL-Java-Library). PPMaJaL provides parsing, data structures, heuristics and search engine for ENHSP.
 
 ## Dependencies
 

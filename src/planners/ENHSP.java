@@ -194,7 +194,8 @@ public class ENHSP {
                 + "hmax, Hmax for Numeric Planning\n"
                 + "hrmax, Hmax for Numeric Planning with redundant constraints\n"
                 + "hmrp, heuristic based on MRP extraction\n"
-                + "blind, goal sensitive heuristic (1 to non goal-states, 0 to goal-states");
+                + "blcost, goal sensitive heuristic (1 to non goal-states, 0 to goal-states)"
+                + "blind, full blind heuristic (0 to all states)");
         options.addOption("s", true, "allows to select search strategy (default is WAStar):\n"
                 + "gbfs, Greedy Best First Search (f(n) = h(n))\n"
                 + "WAStar, WA* (f(n) = g(n) + h_w*h(n))\n"

@@ -1,9 +1,9 @@
 
-**ENHSP is undergoing a number of modifications for bug fixing and improvements. An improved version of ENHSP can already be found in the ENHSP-19 branch of this repository. 
-For a more general overview of ENHSP and the different versions (ENHSP-19, ENHSP-20), have a look at ENHSP website: https://sites.google.com/view/enhsp/.
+**ENHSP is an active project, with continuous bug fixing and improvements, so things written into this README file can be at times outdated. 
+For a general overview of ENHSP and the different versions (ENHSP18, ENHSP-19, ENHSP-20), have a look at the ENHSP website: https://sites.google.com/view/enhsp/.
 If you want to use ENHSP for publishing experiments, please send me an [email](enricos83@gmail.com) so that I can give you the correct version.**
 
-I tried to write a easy to read README. But it could be the case that this is not as easy to read as it is supposed to be. So please send me an email if you have any question (of any kind) on the planner. My email is enricos83 at gmail dot com.
+I tried to write an easy to read README. But it could be the case that this is not as easy to read as it is supposed to be. So please send me an email if you have any question (of any kind) on the planner. My email is enricos83 at gmail dot com.
 
 
 # What is ENHSP?
@@ -15,17 +15,8 @@ This repository contains ENHSP, which stands for Expressive Numeric Heuristic Pl
 3. Planning with discretised autonomous processes and events
 4. Global constraints, which are the analogous of always constraints of PDDL 
 
-Note that the planner DOES NOT SUPPORT THE WHOLE ADL.
+Note that the planner does not support Durative Actions (you need to compile them out) and is not stable with the whole Action Description Language
 
-## Novel Features and License!
-This new version of ENHSP (v0.4) has been extended to support:
-1. discrete events!
-2. universal and existential quantification in formulas (action precondition, constraints and goals)
-3. negative preconditions
-4. novel heuristics based on landmarks and search techniques for planning with autonomous processes! 
-
-The text below can be outdated in some parts! Previous versions of the planner can be found checking out previous commits. The tag v0.3 is the last previous official version of the planner.
-License: The planner is now delivered with a [LGPL3](https://www.gnu.org/licenses/lgpl-3.0.en.html) license
 
 ## Description
 
@@ -45,19 +36,19 @@ M. Ramirez, E. Scala, P. Haslum, S. Thiebaux: **Numerical Integration and Dynami
 
 D. Li, E. Scala, P. Haslum, S. Bogomolov **Effect-Abstraction Based Relaxation for Linear Numeric Planning** In IJCAI 2018
 
-The planner builds on the PPMaJaL library, which can be found [here](https://gitlab.com/enricos83/PPMAJAL-Expressive-PDDL-Java-Library). PPMaJaL provides parsing, data structures, heuristics and search engine for ENHSP.
+E. Scala, P. Haslum, S. Thiebaux, M. Ramirez **Subgoaling Techniques for Satisficing and Optimal Numeric Planning** in JAIR 2020
+
+
+The planner heavily builds on the JPDDL+ library, that is a substantial refactoring of PPMAJAL [here](https://gitlab.com/enricos83/PPMAJAL-Expressive-PDDL-Java-Library). As PPMaJaL, JPDDL+ provides parsing, data structures, heuristics and search engine for ENHSP. JPDDL+ will be released soon.
 
 ## Dependencies
 
-The planner is written completely in [JAVA 1.8](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html). 
+The planner is written completely in JAVA, and in particular it works with [JAVA 15](https://openjdk.java.net/projects/jdk/15/). 
 
 Before compiling make sure to have the Java machine installed on your computer. In Ubuntu this can be obtained executing the following commands from the bash:
 
 ```
-sudo add-apt-repository ppa:webupd8team/java -y
-sudo apt-get update
-sudo apt-get install oracle-java8-installer
-sudo apt-get install oracle-java8-set-default
+sudo apt-get install openjdk-15
 ```
 
 ENHSP depends on a number of other external libraries, some for the PDDL parsing, other for some standard algorithm on graphs, and some to interface the API with a Linear Program solver:
@@ -75,46 +66,31 @@ They are all open source projects, so is this planner and the library it depends
 
 ## Compilation, Running and Execution
 
-To compile the software just go to the root folder and run `compile`; then you need to run the `install` script, which basically creates another script for running it, i.e., `enhsp` (the file needs to be given execution permissions via `chmod +x ./enhsp`). You can link the file from your /usr folder, so use the planner from wherever you want.
+To compile the software just go to the root folder and run `./compile`; this will generate a big JAR file in the enhsp-dist folder
 
-The compilation and running scripts have been written for a Linux based system (i.e., Ubuntu 16.04 works well with them), but I think you can have a similar version for any other system (e.g., Windows or MAC). As long as you provide your OS with a java runtime environment.
 
 The planner can be executed from the root folder using the following command:
 ```
-./enhsp -o <domain_file> -f <problem_file> -planner <string> (main options: sat, aibr, opt, lm_opt)
+java -jar enhsp-dist/enhsp.jar -o <domain_file> -f <problem_file>
 ```
 domain_file and problem_file are the PDDL input files.
-
-- sat and opt are the configurations for the satisficing and the optimal version of ENHSP as for the IJCAI-16 paper. They differ on the use of the search strategy and the heuristic employed. They are made specifically for sequential numeric planning without autonomous processes (even though they can work with processes as well, in some case). These two planners have been developed mainly to test the ideas reported in the IJCAI 2016 paper.
-
-- aibr is the main configuration for planning with autonomous processes. It is A* as search engine and the pure AIBR heuristic as for the ECAI 2016 paper.
-
-- lm_opt is the planner with landmarks extraction and LP solving for the cost-partitioning problem. For this configuration you need to have CPLEX 12.6.3. Since CPLEX is a commercial product you need to have a licence for it (you can get a free academic licence), and link it by putting the cplex.jar library in the libs folder.
-
-- if the planner is used with -s gbfs -ties smaller_g and -h haddabs, the version obtained is equivalent to that used for the IJCAI-18 paper
-
-The planner can be also run using highly customized settings and other configurations not reported here. Using these configurations you can obtain more experimental versions of the planner, some of which are still not published; so use them with care. It may be useful to do so if your problem exhibits particular structures. As an example, when dealing with autonomous processes, ENHSP allows to decouple the delta to be used at execution level, heuristic level and validation level. 
-
-To set these deltas as well as the other parameters (helpful actions, plan extraction so on and so forth), see the help running enhsp without any parameters
 
 It also seems that for some versions of Ubuntu it is required to set the JAVA encoding through the command:
 ```
 "export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8" 
 ```
 
-# Examples
-
-In the repository you will find examples on the types of problems that can be dealt with.
+In the the ENHSP website, https://sites.google.com/view/enhsp/, you can find more information on the parameters, and how to set custom search and heuristic to run the planner.
 
 # Benchmarks
 
 Besides the examples, there are also domains and instances used to test the planner in the ECAI and IJCAI papers.
 
-##Ecai 2016
+## Ecai 2016
 
 The instances used for ECAI 2016 are in the ecai16_benchmarks folder. The planner used for those instances is 'aibr' which corresponds to a setting using A* plus the pure AIBR heuristic used in the paper. Note that this does not mean that this planner cannot obtain *better* performances using other settings of parameters. The analysis performed in the ECAI 2016 paper was intended *just to measure the effectiveness of the heuristic and of the relaxation behind it*
 
-##Ijcai 2016
+## Ijcai 2016
 
 The instances used for IJCAI 2016 are in the ejcai16_benchmarks folder. The planner used for those instances is:
 
@@ -123,7 +99,7 @@ The instances used for IJCAI 2016 are in the ejcai16_benchmarks folder. The plan
 
 In the folder you find two files of the results collected, which slightly differs (from a merely quantitatively standpoint) from the one presented in the paper.
 
-##Ijcai 2017
+## Ijcai 2017
 
 The instances used for IJCAI 2017 are in the ijcai17_benchmarks folder. The planner used for those instances is:
 
@@ -131,16 +107,16 @@ The instances used for IJCAI 2017 are in the ijcai17_benchmarks folder. The plan
 
 The version with landmarks and no redundant constraints can be obtained using a combination of A^*, lm_actions for the heuristic and tie-breaking with larger g-values.
 
-##Ijcai 2018
+## Ijcai 2018
 
 The instances used for IJCAI 2018 are in the ijcai18_benchmarks folder. The planner used for those instances can be obtained running:
 
 - s gbfs -ties smaller_g and -h haddabs
 
 
-#Limitation and Known Caveats
+# Limitation and Known Caveats
 
 The planner is an experimental tool developed as a proof of concepts to verify empirically some of the results obtained during our research activities. This means that there could be bugs, or things that need better optimisation, refinement so on and so forth. If you use the planner, *please let me know*! I am gonna also start to collect all the known issues in the following list:
 
-1. General formulas in action preconditions, constraints and goals can be used only with the AIBR heuristic and the heuristic based on subgoaling (hadd, hmax). They are first translated in NNF and then supported natively in the heuristics. Other heuristics (e.g., lm_actions) don't support negative conditions and disjunctions.
+1. General formulas in action preconditions, constraints and goals can be used only with the AIBR heuristic and the heuristic based on subgoaling (hadd, hmax). They are first translated in NNF and then supported natively in the heuristics. Other heuristics (e.g., hlm-lp) don't support negative conditions and disjunctions.
 2. *IMPORTANT*. As the grammar used in ENHSP to parse the PDDL file can read temporally qualified domains with timed initial literals and durative actions, in the PDDL input it is not possible to use predicates with keywords such as 'at' or 'start'.

@@ -102,6 +102,7 @@ public class ENHSP {
     private boolean ignoreMetric;
     private boolean printActions;
     private String inputPlan;
+    private PrintStream out;
 
     public ENHSP(boolean copyProblem) {
         copyOfTheProblem = copyProblem;
@@ -233,7 +234,7 @@ public class ENHSP {
 
         options.addOption("dl", true, "bound on plan-cost: float (Experimental)");
         options.addOption("k", true, "maximal number of subdomains. This works in combination with haddabs: integer");
-        options.addOption("anytime", false, "Run in anytime modality. Incrementally tries to find an upper bound. Does not stop until the user decides so");
+        options.addOption("anytime", false, "Run in anytime modality. Incrementally tries to find a lower bound. Does not stop until the user decides so");
         options.addOption("timeout", true, "Timeout for anytime modality");
         options.addOption("stopgro", false, "Stop After Grounding");
         options.addOption("ival", false, "Internal Validation");
@@ -242,6 +243,8 @@ public class ENHSP {
         options.addOption("print_actions",false,"Print all actions after grounding");
         options.addOption("tolerance",true,"Numeric tolerance in evaluating numeric conditions. Default is 0.00001");
         options.addOption("inputplan",true,"Insert the name of the file containing the plan to validate. This is to be used with ival activated");
+        options.addOption("silent",false,"Activate silent modality");
+
         CommandLineParser parser = new DefaultParser();
         try {
             CommandLine cmd = parser.parse(options, args);
@@ -279,6 +282,7 @@ public class ENHSP {
             } else {
                 groundingType = "internal";
             }
+            
             internalValidation = cmd.hasOption("ival");
 
             deltaExecution = cmd.getOptionValue("de");
@@ -316,6 +320,7 @@ public class ENHSP {
             }
             
             inputPlan = cmd.getOptionValue("inputplan");
+            inputPlan = cmd.getOptionValue("inputplan");
 
             String k = cmd.getOptionValue("k");
             if (k != null) {
@@ -327,6 +332,16 @@ public class ENHSP {
             gw = cmd.getOptionValue("wg");
             hw = cmd.getOptionValue("wh");
             saving_json = cmd.hasOption("sjr");
+            if (cmd.hasOption("silent")){
+                out = new PrintStream(new OutputStream() {
+                    @Override
+                    public void write(int b) throws IOException {
+                    }
+                });
+            }else{
+                out = System.out;
+            }
+
             sdac = cmd.hasOption("sdac");
             helpfulActionsPruning = cmd.getOptionValue("ha") != null && "true".equals(cmd.getOptionValue("ha"));
             printEvents = cmd.hasOption("pe");
@@ -463,7 +478,7 @@ public class ENHSP {
 
         LinkedList<Pair<BigDecimal, Object>> rawPlan = null;//raw list of actions returned by the search strategies
 
-        final PDDLSearchEngine searchEngine = new PDDLSearchEngine(problem, h); //manager of the search strategies
+        final PDDLSearchEngine searchEngine = new PDDLSearchEngine(out,problem, h); //manager of the search strategies
         Runtime.getRuntime().addShutdownHook(new Thread() {//this is to save json also when the planner is interrupted
             @Override
             public void run() {
@@ -547,14 +562,11 @@ public class ENHSP {
         endGValue = searchEngine.currentG;
         }
         overallPlanningTime = (System.currentTimeMillis() - overallStart);
-        //SimplePlan sp = validate(searchEngine, rawPlan);
-//        if (savePlan != null) {
-//            enhspUtil.ENHSPUtils.savePlan(new LinkedList<Pair<Float,TransitionGround>>(), problem, savePlan);
-//        }
+
         boolean valid = true;
         if (printTrace) {
             String fileName = getProblem().getPddlFileReference() + "_search_" + searchEngineString + "_h_" + heuristic + "_break_ties_" + tieBreaking + ".npt";
-            valid = problem.validate(rawPlan,new BigDecimal(this.deltaExecution), new BigDecimal(deltaPlanning), fileName);
+            valid = problem.validate(rawPlan,new BigDecimal(this.deltaExecution), new BigDecimal(deltaExecution), fileName);
             System.out.println("Numeric Plan Trace saved to " + fileName);
         } else if (internalValidation) {
             Pair<PDDLDomain, PDDLProblem> res = parseDomainProblem(domainFile, problemFile, deltaValidation, new PrintStream(new OutputStream() {

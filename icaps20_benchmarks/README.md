@@ -1,0 +1,1 @@
+These are some of the benchmarks used for the ICAPS-20 paper "Search-guidance mechanisms for numeric planning through subgoaling relaxation". The others domain used in the paper are the ones in the ijca_16 folder.

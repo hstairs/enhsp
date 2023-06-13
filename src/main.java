@@ -1,8 +1,4 @@
-
 import planners.ENHSP;
-
-
-
 /* 
  * Copyright (C) 2015-2017, Enrico Scala, contact: enricos83@gmail.com
  *

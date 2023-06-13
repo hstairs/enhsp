@@ -97,6 +97,7 @@ public class ENHSP {
     private boolean naiveGrounding;
     private boolean stopAfterGrounding;
     private boolean printEvents;
+
     private boolean sdac;
     private boolean onlyPlan;
     private boolean ignoreMetric;
@@ -244,6 +245,7 @@ public class ENHSP {
         options.addOption("tolerance",true,"Numeric tolerance in evaluating numeric conditions. Default is 0.00001");
         options.addOption("inputplan",true,"Insert the name of the file containing the plan to validate. This is to be used with ival activated");
         options.addOption("silent",false,"Activate silent modality");
+ 
 
         CommandLineParser parser = new DefaultParser();
         try {
@@ -345,6 +347,7 @@ public class ENHSP {
             sdac = cmd.hasOption("sdac");
             helpfulActionsPruning = cmd.getOptionValue("ha") != null && "true".equals(cmd.getOptionValue("ha"));
             printEvents = cmd.hasOption("pe");
+
             printTrace = cmd.hasOption("pt");
             savePlan = cmd.getOptionValue("sp");
             onlyPlan = cmd.hasOption("onlyplan");

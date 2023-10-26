@@ -1,35 +1,30 @@
 package planners;
 
 
+import com.hstairs.ppmajal.PDDLProblem.*;
 import com.hstairs.ppmajal.domain.PDDLDomain;
 import com.hstairs.ppmajal.extraUtils.Utils;
 import com.hstairs.ppmajal.pddl.heuristics.PDDLHeuristic;
-import com.hstairs.ppmajal.problem.PDDLProblem;
-import com.hstairs.ppmajal.problem.PDDLSearchEngine;
-import com.hstairs.ppmajal.problem.PDDLState;
 import com.hstairs.ppmajal.search.SearchEngine;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.util.LinkedList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.lang3.tuple.Pair;
 import com.hstairs.ppmajal.search.SearchHeuristic;
 import com.hstairs.ppmajal.transition.TransitionGround;
+import org.apache.commons.cli.*;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /*
  * Copyright (C) 2016-2017 Enrico Scala. Email enricos83@gmail.com.
@@ -61,10 +56,10 @@ public class ENHSP {
     private String domainFile;
     private String problemFile;
     private String searchEngineString;
-    private String hw;
+    private String wh;
     private String heuristic = "aibr";
     private String gw;
-    private boolean saving_json = false;
+    private boolean savingSearchSpaceJson = false;
     private String deltaExecution;
     private float depthLimit;
     private String savePlan;
@@ -74,7 +69,7 @@ public class ENHSP {
     private String deltaHeuristic;
     private String deltaPlanning;
     private String deltaValidation;
-    private boolean helpfulActionsPruning;
+    private boolean helpfulActions;
     private Integer numSubdomains;
     private PDDLProblem problem;
     private boolean pddlPlus;
@@ -104,6 +99,8 @@ public class ENHSP {
     private boolean printActions;
     private String inputPlan;
     private PrintStream out;
+    private boolean autoAnytime;
+    private boolean unitCostHeuristic;
 
     public ENHSP(boolean copyProblem) {
         copyOfTheProblem = copyProblem;
@@ -130,7 +127,8 @@ public class ENHSP {
             out.println("Problem parsed");
             out.println("Grounding..");
 
-            localProblem.prepareForSearch(aibrPreprocessing, stopAfterGrounding);
+            if (!localProblem.prepareForSearch(aibrPreprocessing, stopAfterGrounding))
+               System.exit(1);
             
             if (printActions){
                 System.out.println(localProblem.getTransitions());
@@ -152,6 +150,7 @@ public class ENHSP {
             domain = res.getKey();
             problem = res.getRight();
             if (pddlPlus) {
+                System.out.println("Heuristic Problem Creation");
                 res = parseDomainProblem(domainFile, problemFile, deltaHeuristic, new PrintStream(new OutputStream() {
                     public void write(int b) {}}));
                 domainHeuristic = res.getKey();
@@ -171,22 +170,51 @@ public class ENHSP {
         }
     }
 
+    public record AnytimeConfigurations (String search, String heuristic, Boolean ha, String wh) {}
+    LinkedList<AnytimeConfigurations> conf = new LinkedList();
+
     public void planning() {
 
         try {
             printStats();
             setHeuristic();
+            if (autoAnytime){
+                conf.add(new AnytimeConfigurations("lazygbfs","hmrp", true, "4"));
+                conf.add(new AnytimeConfigurations("lazywastar","hmrp", false, "8"));
+                conf.add(new AnytimeConfigurations("lazywastar","hmrp", false, "4"));
+                conf.add(new AnytimeConfigurations("lazywastar","hmrp", false, "2"));
+                conf.add(new AnytimeConfigurations("lazywastar","hmrp", false, "1"));
+                conf.add(new AnytimeConfigurations("wastar","hmrp", false, "1"));
+
+            }
+            int i = 0;
             do {
-                LinkedList sp = search();
+                if (autoAnytime){
+                    if ( conf.size() > i ) {
+                        AnytimeConfigurations anytimeConfigurations = conf.get(i);
+                        searchEngineString = anytimeConfigurations.search;
+                        heuristic = anytimeConfigurations.heuristic;
+                        helpfulActions = anytimeConfigurations.ha;
+                        wh = anytimeConfigurations.wh;
+                    }
+                }
+                LinkedList sp = searchRefactored();
+                if (printTrace) {
+                    String fileName = getProblem().getPddlFileReference() + "_search_" + searchEngineString + "_h_" + heuristic + "_break_ties_" + tieBreaking + ".npt";
+                    problem.validateRefactored(sp,new BigDecimal(this.deltaExecution), new BigDecimal(deltaExecution), fileName);
+                    System.out.println("Numeric Plan Trace saved to " + fileName);
+                }
                 if (sp == null) {
                     return;
+                }else {
+                    depthLimit = endGValue;
+                    if (anyTime) {
+                        System.out.println("NEW COST ==================================================================================>" + depthLimit);
+                    }
+                    sp = null;
+                    System.gc();
+                    i++;
                 }
-                depthLimit = endGValue;
-                if (anyTime) {
-                    System.out.println("NEW COST ==================================================================================>" + depthLimit);
-                }
-                sp = null;
-                System.gc();
             } while (anyTime);
         } catch (Exception ex) {
             Logger.getLogger(ENHSP.class.getName()).log(Level.SEVERE, null, ex);
@@ -210,18 +238,19 @@ public class ENHSP {
                 + "blind, full blind heuristic (0 to all states)");
         options.addOption("s", true, "allows to select search strategy (default is WAStar):\n"
                 + "gbfs, Greedy Best First Search (f(n) = h(n))\n"
+                + "lazygbfs, Greedy Best First Search (f(n) = h(n)) with lazy evaluation\n"
                 + "WAStar, WA* (f(n) = g(n) + h_w*h(n))\n"
                 + "wa_star_4, WA* (f(n) = g(n) + 4*h(n))\n");
         options.addOption("ties", true, "tie-breaking (default is arbitrary): larger_g, smaller_g, arbitrary");
         options.addOption("dp", "delta_planning", true, "planning decision executionDelta: float");
-        options.addOption("de", "delta_execuction", true, "planning execution executionDelta: float");
+        options.addOption("de", "delta_execution", true, "planning execution executionDelta: float");
         options.addOption("dh", "delta_heuristic", true, "planning heuristic executionDelta: float");
         options.addOption("dv", "delta_validation", true, "validation executionDelta: float");
         options.addOption("d", "delta", true, "Override other delta_<planning,execuction,validation,heuristic> configurations: float");
         options.addOption("epsilon", true, "epsilon separation: float");
         options.addOption("wh", true, "h-values weight: float");
         options.addOption("sjr", false, "save state space explored in json file");
-        options.addOption("ha", "helpful-actions", true, "activate helpful actions pruning");
+        options.addOption("ha", "helpful-actions", true, "activate helpful actions in the search");
         options.addOption("pe", "print-events-plan", false, "activate printing of events");
 
         options.addOption("ht", "helpful-transitions", true, "activate up-to-macro actions");
@@ -245,7 +274,8 @@ public class ENHSP {
         options.addOption("tolerance",true,"Numeric tolerance in evaluating numeric conditions. Default is 0.00001");
         options.addOption("inputplan",true,"Insert the name of the file containing the plan to validate. This is to be used with ival activated");
         options.addOption("silent",false,"Activate silent modality");
- 
+        options.addOption("autoanytime",false,"Activate auto anytime modality. ");
+        options.addOption("uch",false,"Pretend all actions cost one in the heuristic");
 
         CommandLineParser parser = new DefaultParser();
         try {
@@ -286,6 +316,7 @@ public class ENHSP {
             }
             
             internalValidation = cmd.hasOption("ival");
+            this.unitCostHeuristic = cmd.hasOption("uch");
 
             deltaExecution = cmd.getOptionValue("de");
             if (deltaExecution == null) {
@@ -303,7 +334,7 @@ public class ENHSP {
             if (temp != null) {
                 depthLimit = Float.parseFloat(temp);
             } else {
-                depthLimit = Float.NaN;
+                depthLimit = -1;
             }
 
             String timeOutString = cmd.getOptionValue("timeout");
@@ -332,8 +363,8 @@ public class ENHSP {
             }
 
             gw = cmd.getOptionValue("wg");
-            hw = cmd.getOptionValue("wh");
-            saving_json = cmd.hasOption("sjr");
+            wh = cmd.getOptionValue("wh");
+            savingSearchSpaceJson = cmd.hasOption("sjr");
             if (cmd.hasOption("silent")){
                 out = new PrintStream(new OutputStream() {
                     @Override
@@ -345,7 +376,9 @@ public class ENHSP {
             }
 
             sdac = cmd.hasOption("sdac");
-            helpfulActionsPruning = cmd.getOptionValue("ha") != null && "true".equals(cmd.getOptionValue("ha"));
+            helpfulActions = cmd.getOptionValue("ha") != null && "true".equals(cmd.getOptionValue("ha"));
+            autoAnytime = cmd.hasOption("autoanytime");
+
             printEvents = cmd.hasOption("pe");
 
             printTrace = cmd.hasOption("pt");
@@ -389,7 +422,7 @@ public class ENHSP {
 
     private void setPlanner() {
         helpfulTransitions = false;
-        helpfulActionsPruning = false;
+        helpfulActions = false;
         tieBreaking = "arbitrary";
         switch (planner) {
             case "sat-hmrp":
@@ -399,20 +432,20 @@ public class ENHSP {
                 break;
             case "sat-hmrph":
                 heuristic = "hmrp";
-                helpfulActionsPruning = true;
+                helpfulActions = true;
                 searchEngineString = "gbfs";
                 tieBreaking = "arbitrary";
                 break;
             case "sat-hmrphj":
                 heuristic = "hmrp";
-                helpfulActionsPruning = true;
+                helpfulActions = true;
                 helpfulTransitions = true;
                 searchEngineString = "gbfs";
                 tieBreaking = "arbitrary";
                 break;
             case "sat-hmrpff":
                 heuristic = "hmrp";
-                helpfulActionsPruning = false;
+                helpfulActions = false;
                 redundantConstraints = "brute";
                 helpfulTransitions = false;
                 searchEngineString = "gbfs";
@@ -472,12 +505,68 @@ public class ENHSP {
 
     private void setHeuristic() {
 //        System.out.println("ha:" + helpfulActionsPruning + " ht" + helpfulTransitions);
-        h = PDDLHeuristic.getHeuristic(heuristic, heuristicProblem, redundantConstraints, helpfulActionsPruning, helpfulTransitions);
+        h = PDDLHeuristic.getHeuristic(heuristic, heuristicProblem, redundantConstraints, helpfulActions, helpfulTransitions,
+                unitCostHeuristic);
     }
 
-   
+    private LinkedList<ImmutablePair<BigDecimal, TransitionGround>> searchRefactored() throws Exception {
 
-    private LinkedList<Pair<BigDecimal, Object>> search() throws Exception {
+        PDDLPlanner planner = new PDDLPlanner(searchEngineString,
+                heuristic,
+                redundantConstraints,
+                helpfulActions,
+                helpfulTransitions,
+                wh != null ? Float.parseFloat(this.wh) : (float) 1.0,
+                deltaPlanning != null ? new BigDecimal(deltaPlanning) : new BigDecimal(1.0),
+                deltaExecution != null ? new BigDecimal(deltaExecution) : new BigDecimal(1.0),
+                tieBreaking == null ? "arbitrary": tieBreaking, savingSearchSpaceJson, depthLimit == -1 ? Float.POSITIVE_INFINITY : depthLimit
+                );
+
+        if (savingSearchSpaceJson) {
+            Runtime.getRuntime().addShutdownHook(new Thread() {//this is to save json also when the planner is interrupted
+                @Override
+                public void run() {
+                        planner.getSearchSpaceHandle().printJson(
+                                getProblem().getPddlFileReference() + ".sp_log");
+                }
+            });
+        }
+        overallStart = System.currentTimeMillis();
+        PDDLSolution plan = planner.plan(problem, h);
+        overallPlanningTime = (System.currentTimeMillis() - overallStart);
+        endGValue = plan.gValueAtTheEnd();
+        printInfoRefactored(plan,pddlPlus,savePlan,plan == null ? null : plan.lastState());
+        if (savingSearchSpaceJson) {
+            planner.getSearchSpaceHandle().printJson(getProblem().getPddlFileReference() + ".sp_log");
+        }
+        return plan.rawPlan();
+    }
+
+    private void printInfoRefactored(PDDLSolution plan, boolean pddlPlus, String savePlan, PDDLState s) {
+        if (plan.rawPlan() != null) {
+            System.out.println("Problem Solved\n");
+            System.out.println("Found Plan:");
+            printPlanRefactored(plan.rawPlan(), pddlPlus, s, savePlan);
+            System.out.println("\nPlan-Length:" + plan.rawPlan().size());
+            planLength = plan.rawPlan().size();
+        } else {
+            System.out.println("Problem unsolvable");
+        }
+        if (pddlPlus && plan.rawPlan() != null) {
+            System.out.println("Elapsed Time: " + s.time);
+        }
+        System.out.println("Metric (Search):" + plan.gValueAtTheEnd());
+        System.out.println("Planning Time (msec): " + overallPlanningTime);
+        System.out.println("Heuristic Time (msec): " + plan.stats().heuristicTime());
+        System.out.println("Search Time (msec): " + plan.stats().searchTime());
+        System.out.println("Expanded Nodes:" + plan.stats().nodesExpanded());
+        System.out.println("States Evaluated:" + plan.stats().nodesEvaluated());
+        System.out.println("Number of Dead-Ends detected:" + plan.stats().deadEnds());
+        System.out.println("Number of Duplicates detected:" + plan.stats().duplicates());
+
+    }
+
+    private LinkedList<Pair<BigDecimal, Object>>  search() throws Exception {
 
         LinkedList<Pair<BigDecimal, Object>> rawPlan = null;//raw list of actions returned by the search strategies
 
@@ -485,13 +574,13 @@ public class ENHSP {
         Runtime.getRuntime().addShutdownHook(new Thread() {//this is to save json also when the planner is interrupted
             @Override
             public void run() {
-                if (saving_json) {
-                    searchEngine.searchSpaceHandle.print_json(getProblem().getPddlFileReference() + ".sp_log");
+                if (savingSearchSpaceJson) {
+                    searchEngine.searchSpaceHandle.printJson(getProblem().getPddlFileReference() + ".sp_log");
                 }
             }
         });
 
-        searchEngine.saveSearchTreeAsJson = saving_json;
+        searchEngine.saveSearchTreeAsJson = savingSearchSpaceJson;
 
         if (tieBreaking != null) {
             switch (tieBreaking) {
@@ -511,9 +600,9 @@ public class ENHSP {
 
         }
 
-        if (hw != null) {
-            searchEngine.setWH(Float.parseFloat(hw));
-            System.out.println("w_h set to be " + hw);
+        if (wh != null) {
+            searchEngine.setWH(Float.parseFloat(wh));
+            System.out.println("w_h set to be " + wh);
         } else {
             searchEngine.setWH(1);
         }
@@ -526,11 +615,11 @@ public class ENHSP {
             searchEngine.depthLimit = Float.POSITIVE_INFINITY;
         }
         
-        if (helpfulActionsPruning)
+        if (helpfulActions)
             System.out.println("Helpful Action Pruning Activated");
         
         if (inputPlan == null){
-        searchEngine.helpfulActionsPruning = helpfulActionsPruning;
+        searchEngine.helpfulActionsPruning = helpfulActions;
         if ("WAStar".equals(searchEngineString)) {
             System.out.println("Running WA-STAR");
             rawPlan = searchEngine.WAStar(getProblem(), timeOut);
@@ -559,7 +648,10 @@ public class ENHSP {
         } else if ("dfsbnb".equals(searchEngineString)) {
             System.out.println("Running dfsbnb");
             rawPlan = searchEngine.dfsbnb(getProblem(),true);
-        }else {
+        } else if ("gbfs_interface".equals(searchEngineString)) {
+            System.out.println("Running dfsbnb");
+            rawPlan = searchEngine.dfsbnb(getProblem(),true);
+        } else {
             throw new RuntimeException("Search strategy is not correct");
         }
         endGValue = searchEngine.currentG;
@@ -631,7 +723,7 @@ public class ENHSP {
 //        }
 //        return sp;
 //    }
-    private void printInfo(LinkedList<Pair<BigDecimal, Object>> sp, PDDLSearchEngine searchEngine) throws CloneNotSupportedException {
+    private void printInfo(LinkedList<Pair<BigDecimal, Object>>  sp, PDDLSearchEngine searchEngine) throws CloneNotSupportedException {
 
         PDDLState s = (PDDLState) searchEngine.getLastState();
         if (pddlPlus && sp != null){
@@ -660,11 +752,74 @@ public class ENHSP {
 //        if (searchEngine.getHeuristic() instanceof quasi_hm) {
 //            System.out.println("Number of LP invocations:" + ((quasi_hm) searchEngine.getHeuristic()).n_lp_invocations);
 //        }
-        if (saving_json) {
-            searchEngine.searchSpaceHandle.print_json(getProblem().getPddlFileReference() + ".sp_log");
+        if (savingSearchSpaceJson) {
+            searchEngine.searchSpaceHandle.printJson(getProblem().getPddlFileReference() + ".sp_log");
         }
     }
 
+    private void printPlanRefactored(LinkedList<ImmutablePair<BigDecimal, TransitionGround>> plan, boolean temporal, PDDLState par, String fileName) {
+        float i = 0f;
+        ImmutablePair<BigDecimal, TransitionGround> previous = null;
+        List<String> fileContent = new ArrayList();
+        boolean startProcess = false;
+        int size = plan.size();
+        int  j = 0;
+        for (ImmutablePair<BigDecimal, TransitionGround> ele : plan) {
+            j++;
+            if (!temporal) {
+                System.out.print(i + ": " + ele.getRight() + "\n");
+                if (fileName != null){
+                    TransitionGround t = (TransitionGround) ele.getRight();
+                    fileContent.add(t.toString());
+                }
+                i++;
+            } else {
+                TransitionGround t = (TransitionGround) ele.getRight();
+                if (t.getSemantics() == TransitionGround.Semantics.PROCESS) {
+                    if (!startProcess) {
+                        previous = ele;
+                        startProcess = true;
+                    }
+                    if (j == size) {
+                        if (!onlyPlan){
+                            System.out.println(previous.getLeft() + ": -----waiting---- " + "[" + par.time + "]");
+                        }
+                    }
+                } else {
+                    if (t.getSemantics() != TransitionGround.Semantics.EVENT || printEvents) {
+                        if (startProcess) {
+                            startProcess = false;
+                            if (!onlyPlan){
+                                System.out.println(previous.getLeft() + ": -----waiting---- " + "[" + ele.getLeft() + "]");
+                            }
+                        }
+                        System.out.print(ele.getLeft() + ": " + ele.getRight() + "\n");
+                        if (fileName != null) {
+                            fileContent.add(ele.getLeft() + ": "+ t.toString());
+                        }
+                    } else {
+                        if (j == size) {
+                            if (!onlyPlan){
+                                System.out.println(previous.getLeft() + ": -----waiting---- " + "[" + ele.getLeft() + "]");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (fileName != null) {
+            try {
+                if (temporal){
+                    fileContent.add(par.time+": @PlanEND ");
+                }
+                Files.write(Path.of(fileName), fileContent);
+
+            } catch (IOException ex) {
+                Logger.getLogger(ENHSP.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
     private void printPlan(LinkedList<Pair<BigDecimal, Object>> plan, boolean temporal, PDDLState par, String fileName) {
         float i = 0f;
         Pair<BigDecimal, Object> previous = null;

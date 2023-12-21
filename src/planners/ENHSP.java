@@ -127,8 +127,8 @@ public class ENHSP {
             out.println("Problem parsed");
             out.println("Grounding..");
 
-            if (!localProblem.prepareForSearch(aibrPreprocessing, stopAfterGrounding))
-               System.exit(1);
+            localProblem.prepareForSearch(aibrPreprocessing, stopAfterGrounding);
+
             
             if (printActions){
                 System.out.println(localProblem.getTransitions());

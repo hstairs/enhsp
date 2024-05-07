@@ -5,7 +5,6 @@ import com.hstairs.ppmajal.PDDLProblem.*;
 import com.hstairs.ppmajal.domain.PDDLDomain;
 import com.hstairs.ppmajal.extraUtils.Utils;
 import com.hstairs.ppmajal.pddl.heuristics.PDDLHeuristic;
-import com.hstairs.ppmajal.search.SearchEngine;
 import com.hstairs.ppmajal.search.SearchHeuristic;
 import com.hstairs.ppmajal.transition.TransitionGround;
 import org.apache.commons.cli.*;
@@ -16,10 +15,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -198,7 +195,7 @@ public class ENHSP {
                         wh = anytimeConfigurations.wh;
                     }
                 }
-                LinkedList sp = searchRefactored();
+                LinkedList sp = search();
                 if (printTrace) {
                     String fileName = getProblem().getPddlFileReference() + "_search_" + searchEngineString + "_h_" + heuristic + "_break_ties_" + tieBreaking + ".npt";
                     problem.validateRefactored(sp,new BigDecimal(this.deltaExecution), new BigDecimal(deltaExecution), fileName);
@@ -226,15 +223,15 @@ public class ENHSP {
         Options options = new Options();
         options.addRequiredOption("o", "domain", true, "PDDL domain file");
         options.addRequiredOption("f", "problem", true, "PDDL problem file");
-        options.addOption("planner", true, "Fast Preconfgured Planner. For available options look into the code. This overrides all other parameters but domain and problem specs.");
-        options.addOption("h", true, "heuristic: options (default is AIBR):\n"
+        options.addOption("planner", true, "Fast Preconfgured Planner. For available options look into the code. This overrides all other parameters but domain and problem specs. Commonly used settings are: sat-hmrp (satisficing planning) or opt-hrmax (optimal planning).");
+        options.addOption("h", true, "heuristic: options (default is hadd):\n"
                 + "aibr, Additive Interval Based relaxation heuristic\n"
                 + "hadd, Additive version of subgoaling heuristic\n"
                 + "hradd, Additive version of subgoaling heuristic plus redundant constraints\n"
                 + "hmax, Hmax for Numeric Planning\n"
                 + "hrmax, Hmax for Numeric Planning with redundant constraints\n"
                 + "hmrp, heuristic based on MRP extraction\n"
-                + "blcost, goal sensitive heuristic (1 to non goal-states, 0 to goal-states)"
+                + "blcost, goal sensitive heuristic (1 to non goal-states, 0 to goal-states)\n"
                 + "blind, full blind heuristic (0 to all states)");
         options.addOption("s", true, "allows to select search strategy (default is WAStar):\n"
                 + "gbfs, Greedy Best First Search (f(n) = h(n))\n"
@@ -509,7 +506,7 @@ public class ENHSP {
                 unitCostHeuristic);
     }
 
-    private LinkedList<ImmutablePair<BigDecimal, TransitionGround>> searchRefactored() throws Exception {
+    private LinkedList<ImmutablePair<BigDecimal, TransitionGround>> search() throws Exception {
 
         PDDLPlanner planner = new PDDLPlanner(searchEngineString,
                 heuristic,
@@ -535,18 +532,18 @@ public class ENHSP {
         PDDLSolution plan = planner.plan(problem, h);
         overallPlanningTime = (System.currentTimeMillis() - overallStart);
         endGValue = plan.gValueAtTheEnd();
-        printInfoRefactored(plan,pddlPlus,savePlan,plan == null ? null : plan.lastState());
+        printInfo(plan,pddlPlus,savePlan,plan == null ? null : plan.lastState());
         if (savingSearchSpaceJson) {
             planner.getSearchSpaceHandle().printJson(getProblem().getPddlFileReference() + ".sp_log");
         }
         return plan.rawPlan();
     }
 
-    private void printInfoRefactored(PDDLSolution plan, boolean pddlPlus, String savePlan, PDDLState s) {
+    private void printInfo(PDDLSolution plan, boolean pddlPlus, String savePlan, PDDLState s) {
         if (plan.rawPlan() != null) {
             System.out.println("Problem Solved\n");
             System.out.println("Found Plan:");
-            printPlanRefactored(plan.rawPlan(), pddlPlus, s, savePlan);
+            printPlan(plan.rawPlan(), pddlPlus, s, savePlan);
             System.out.println("\nPlan-Length:" + plan.rawPlan().size());
             planLength = plan.rawPlan().size();
         } else {
@@ -566,198 +563,8 @@ public class ENHSP {
 
     }
 
-    private LinkedList<Pair<BigDecimal, Object>>  search() throws Exception {
 
-        LinkedList<Pair<BigDecimal, Object>> rawPlan = null;//raw list of actions returned by the search strategies
-
-        final PDDLSearchEngine searchEngine = new PDDLSearchEngine(out,problem, h); //manager of the search strategies
-        Runtime.getRuntime().addShutdownHook(new Thread() {//this is to save json also when the planner is interrupted
-            @Override
-            public void run() {
-                if (savingSearchSpaceJson) {
-                    searchEngine.searchSpaceHandle.printJson(getProblem().getPddlFileReference() + ".sp_log");
-                }
-            }
-        });
-
-        searchEngine.saveSearchTreeAsJson = savingSearchSpaceJson;
-
-        if (tieBreaking != null) {
-            switch (tieBreaking) {
-                case "smaller_g":
-                    searchEngine.tbRule = SearchEngine.TieBreaking.LOWERG;
-                    break;
-                case "larger_g":
-                    searchEngine.tbRule = SearchEngine.TieBreaking.HIGHERG;
-                    break;
-                default:
-                    System.out.println("Wrong setting for break-ties. Arbitrary tie breaking");
-                    break;
-            }
-        } else {//the following is the arbitrary setting
-            tieBreaking = "arbitrary";
-            searchEngine.tbRule = SearchEngine.TieBreaking.ARBITRARY;
-
-        }
-
-        if (wh != null) {
-            searchEngine.setWH(Float.parseFloat(wh));
-            System.out.println("w_h set to be " + wh);
-        } else {
-            searchEngine.setWH(1);
-        }
-
-
-        if (depthLimit != Float.NaN) {
-            searchEngine.depthLimit = depthLimit;
-            System.out.println("Setting horizon to:" + depthLimit);
-        } else {
-            searchEngine.depthLimit = Float.POSITIVE_INFINITY;
-        }
-        
-        if (helpfulActions)
-            System.out.println("Helpful Action Pruning Activated");
-        
-        if (inputPlan == null){
-        searchEngine.helpfulActionsPruning = helpfulActions;
-        if ("WAStar".equals(searchEngineString)) {
-            System.out.println("Running WA-STAR");
-            rawPlan = searchEngine.WAStar(getProblem(), timeOut);
-        } else if ("wa_star_4".equals(searchEngineString)) {
-            System.out.println("Running greedy WA-STAR with hw = 4");
-            searchEngine.setWH(4);
-            rawPlan = searchEngine.WAStar();
-        } else if ("gbfs".equals(searchEngineString)) {
-            System.out.println("Running Greedy Best First Search");
-            rawPlan = searchEngine.gbfs(getProblem(), timeOut);
-        } else if ("gbfs_ha".equals(searchEngineString)) {
-            System.out.println("Running Greedy Best First Search with Helpful Actions");
-            rawPlan = searchEngine.gbfs(getProblem(), timeOut);
-        } else if ("ida".equals(searchEngineString)) {
-            System.out.println("Running IDAStar");
-            rawPlan = searchEngine.idastar(getProblem(), true);
-        } else if ("ucs".equals(searchEngineString)) {
-            System.out.println("Running Pure Uniform Cost Search");
-            rawPlan = searchEngine.UCS(getProblem());
-        } else if ("brfs".equals(searchEngineString)) {
-            System.out.println("Running Pure Breath First Search");
-            rawPlan = searchEngine.breathFirstSearch(getProblem());
-        } else if ("ehc".equals(searchEngineString)) {
-            System.out.println("Running Enforced Hill Climbing");
-            rawPlan = searchEngine.enforceHillClimbing(getProblem());
-        } else if ("dfsbnb".equals(searchEngineString)) {
-            System.out.println("Running dfsbnb");
-            rawPlan = searchEngine.dfsbnb(getProblem(),true);
-        } else if ("gbfs_interface".equals(searchEngineString)) {
-            System.out.println("Running dfsbnb");
-            rawPlan = searchEngine.dfsbnb(getProblem(),true);
-        } else {
-            throw new RuntimeException("Search strategy is not correct");
-        }
-        endGValue = searchEngine.currentG;
-        }
-        overallPlanningTime = (System.currentTimeMillis() - overallStart);
-
-        boolean valid = true;
-        if (printTrace) {
-            String fileName = getProblem().getPddlFileReference() + "_search_" + searchEngineString + "_h_" + heuristic + "_break_ties_" + tieBreaking + ".npt";
-            valid = problem.validate(rawPlan,new BigDecimal(this.deltaExecution), new BigDecimal(deltaExecution), fileName);
-            System.out.println("Numeric Plan Trace saved to " + fileName);
-        } else if (internalValidation) {
-            Pair<PDDLDomain, PDDLProblem> res = parseDomainProblem(domainFile, problemFile, deltaValidation, new PrintStream(new OutputStream() {
-                    public void write(int b) {}}));
-            PDDLSearchEngine validator = new PDDLSearchEngine(res.getRight(), h);
-            
-            if (inputPlan == null)
-                valid = res.getRight().validate(rawPlan,new BigDecimal(this.deltaExecution), new BigDecimal(deltaValidation),"/tmp/temp_trace.pddl");
-            else{
-                List<PDDLState> simulate = res.getRight().simulate(getPlan(problem, inputPlan), deltaValidation, (PDDLState) problem.getInit(), problem, true);
-                valid = simulate.get(simulate.size()-1).satisfy(problem.getGoals());
-                for (var v: simulate){
-                    System.out.println(v);
-                }
-            }
-            if (valid) {
-                System.out.println("Plan is valid");
-            }else{
-                System.out.println("Plan is not valid");
-            }
-        }
-        printInfo(rawPlan, searchEngine);
-        return rawPlan;
-    }
-
-//    private SimplePlan validate(PDDLSearchEngine searchEngine, LinkedList raw_plan) throws CloneNotSupportedException, Exception {
-//        SimplePlan sp = new SimplePlan(domain, getProblem(), false, pddlPlus);  //placeholder for the plan to be found
-//        PDDLState lastState = null;
-//        System.out.println("Starting Validation");
-//        if (raw_plan != null) {// Print some useful information on the outcome of the planning process
-//            sp.print_trace = print_trace;
-//            if (!pddlPlus) {
-//                sp.addAll(raw_plan);
-//                lastState = sp.execute((PDDLState) getProblem().getInit(), getProblem().globalConstraints);
-//                System.out.println("(Pddl2.1 semantics) Plan is valid:" + lastState.satisfy(getProblem().getGoals()));
-//            } else { //This is when you have also autonomous processes going on
-//                PDDLDomain validationDomain = new PDDLDomain(domainFile);
-//                PDDLProblem validationProblem = new PDDLProblem(problemFile, validationDomain.getConstants(), validationDomain.getTypes(),validationDomain);
-//                //this is when you have processes
-//                validationProblem.groundingActionProcessesConstraints();
-////                validationProblem.syncAllVariablesAndUpdateCollections(getProblem());
-//                validationProblem.setDeltaTimeVariable(delta_val);
-//                validationProblem.simplifyAndSetupInit(true);
-//                Float time = sp.build_pddl_plus_plan(raw_plan, epsilon);
-//                lastState = sp.execute((PDDLState) validationProblem.getInit(), validationProblem.globalConstraints, validationProblem.getProcessesSet(), validationProblem.getEventsSet(), searchEngine.planningDelta, Float.parseFloat(delta_val), time);
-////                System.out.println("Last PDDLState:"+last_state.pddlPrint());
-//                boolean goal_reached = lastState.satisfy(getProblem().getGoals());
-//                System.out.println("(Pddl+ semantics) Plan is valid:" + goal_reached);
-//            }
-//        }else{
-//            return null;
-//        }
-//        if (lastState != null) {
-//            if (!pddlPlus) {
-//                sp.setDuration(sp.size());
-//            } else {
-//                sp.setDuration(lastState.time);//                System.out.println("Duration Via Simulation:"+String.format("%.7f",last_state.getTime().getNumber()));
-//            }
-//        }
-//        return sp;
-//    }
-    private void printInfo(LinkedList<Pair<BigDecimal, Object>>  sp, PDDLSearchEngine searchEngine) throws CloneNotSupportedException {
-
-        PDDLState s = (PDDLState) searchEngine.getLastState();
-        if (pddlPlus && sp != null){
-        }
-        if (sp != null) {
-            System.out.println("Problem Solved\n");
-            System.out.println("Found Plan:");
-            printPlan(sp, pddlPlus, s,savePlan);
-            System.out.println("\nPlan-Length:" + sp.size());
-            planLength = sp.size();
-        } else {
-            System.out.println("Problem unsolvable");
-        }
-        if (pddlPlus && sp != null) {
-            System.out.println("Elapsed Time: " + s.time);
-        }
-        System.out.println("Metric (Search):" + searchEngine.currentG);
-        System.out.println("Planning Time (msec): " + overallPlanningTime);
-        System.out.println("Heuristic Time (msec): " + searchEngine.getHeuristicCpuTime());
-        System.out.println("Search Time (msec): " + searchEngine.getOverallSearchTime());
-        System.out.println("Expanded Nodes:" + searchEngine.getNodesExpanded());
-        System.out.println("States Evaluated:" + searchEngine.getNumberOfEvaluatedStates());
-        System.out.println("Fixed constraint violations during search (zero-crossing):" + searchEngine.constraintsViolations);
-        System.out.println("Number of Dead-Ends detected:" + searchEngine.deadEndsDetected);
-        System.out.println("Number of Duplicates detected:" + searchEngine.duplicatesNumber);
-//        if (searchEngine.getHeuristic() instanceof quasi_hm) {
-//            System.out.println("Number of LP invocations:" + ((quasi_hm) searchEngine.getHeuristic()).n_lp_invocations);
-//        }
-        if (savingSearchSpaceJson) {
-            searchEngine.searchSpaceHandle.printJson(getProblem().getPddlFileReference() + ".sp_log");
-        }
-    }
-
-    private void printPlanRefactored(LinkedList<ImmutablePair<BigDecimal, TransitionGround>> plan, boolean temporal, PDDLState par, String fileName) {
+    private void printPlan(LinkedList<ImmutablePair<BigDecimal, TransitionGround>> plan, boolean temporal, PDDLState par, String fileName) {
         float i = 0f;
         ImmutablePair<BigDecimal, TransitionGround> previous = null;
         List<String> fileContent = new ArrayList();
@@ -820,85 +627,5 @@ public class ENHSP {
             }
         }
     }
-    private void printPlan(LinkedList<Pair<BigDecimal, Object>> plan, boolean temporal, PDDLState par, String fileName) {
-        float i = 0f;
-        Pair<BigDecimal, Object> previous = null;
-        List<String> fileContent = new ArrayList();
-        boolean startProcess = false;
-        int size = plan.size();
-        int  j = 0;
-        for (Pair<BigDecimal, Object> ele : plan) {
-            j++;
-            if (!temporal) {
-                System.out.print(i + ": " + ele.getRight() + "\n");
-                if (fileName != null){
-                    TransitionGround t = (TransitionGround) ele.getRight();
-                    fileContent.add(t.toString());
-                }
-                i++;
-            } else {
-                TransitionGround t = (TransitionGround) ele.getRight();
-                if (t.getSemantics() == TransitionGround.Semantics.PROCESS) {
-                    if (!startProcess) {
-                        previous = ele;
-                        startProcess = true;
-                    }
-                    if (j == size) {
-                        if (!onlyPlan){
-                            System.out.println(previous.getLeft() + ": -----waiting---- " + "[" + par.time + "]");
-                        }
-                    }
-                } else {
-                    if (t.getSemantics() != TransitionGround.Semantics.EVENT || printEvents) {
-                        if (startProcess) {
-                            startProcess = false;
-                            if (!onlyPlan){
-                                System.out.println(previous.getLeft() + ": -----waiting---- " + "[" + ele.getLeft() + "]");
-                            }
-                        }
-                        System.out.print(ele.getLeft() + ": " + ele.getRight() + "\n");
-                        if (fileName != null) {
-                            fileContent.add(ele.getLeft() + ": "+ t.toString());
-                        }
-                    } else {
-                        if (j == size) {
-                            if (!onlyPlan){
-                                System.out.println(previous.getLeft() + ": -----waiting---- " + "[" + ele.getLeft() + "]");
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        if (fileName != null) {
-            try {
-                if (temporal){
-                    fileContent.add(par.time+": @PlanEND ");
-                }
-                Files.write(Path.of(fileName), fileContent);
-                
-            } catch (IOException ex) {
-                Logger.getLogger(ENHSP.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-    }
-    private static LinkedList<Pair<BigDecimal,TransitionGround>> getPlan(PDDLProblem problem, String plan) throws IOException {
-        Path path = Paths.get(plan);
-        final LinkedList<Pair<BigDecimal,TransitionGround>> pddlPlan = new LinkedList();
-            final List<String> readAllLines = Files.readAllLines(path,StandardCharsets.UTF_8);
-            for (var v: readAllLines){
-                String actionName = v.split(":")[1];
-                actionName = actionName.trim();
-                final BigDecimal time = new BigDecimal(v.split(":")[0]);
-                TransitionGround pddlAction = problem.getActionsByName(actionName);
-                if (pddlAction == null && !actionName.equals("@PlanEND")){
-                    throw new RuntimeException("Action "+actionName+" is either not present in the domain or not applicable at time "+time);
-                }
-//                if (!actionName.equals("@PlanEND")){
-                    pddlPlan.add(Pair.of(time,pddlAction));
-//                }
-            }
-        return pddlPlan;
-    }
+
 }

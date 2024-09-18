@@ -98,6 +98,8 @@ public class ENHSP {
     private PrintStream out;
     private boolean autoAnytime;
     private boolean unitCostHeuristic;
+    private boolean printAllInfo;
+    private boolean printMakespan;
 
     public ENHSP(boolean copyProblem) {
         copyOfTheProblem = copyProblem;
@@ -124,11 +126,17 @@ public class ENHSP {
             out.println("Problem parsed");
             out.println("Grounding..");
 
-            localProblem.prepareForSearch(aibrPreprocessing, stopAfterGrounding);
+            if (!localProblem.prepareForSearch(aibrPreprocessing, stopAfterGrounding)) {
+                return null;
+            }
+
 
             
             if (printActions){
                 System.out.println(localProblem.getTransitions());
+            }
+            if (printAllInfo){
+                localProblem.printAllInfo();
             }
             if (stopAfterGrounding) {
                 System.exit(1);
@@ -140,10 +148,12 @@ public class ENHSP {
         return null;
     }
 
-    public void parsingDomainAndProblem(String[] args) {
+    public boolean parsingDomainAndProblem(String[] args) {
         try {
             overallStart = System.currentTimeMillis();
             Pair<PDDLDomain, PDDLProblem> res = parseDomainProblem(domainFile, problemFile, deltaExecution, System.out);
+            if (res == null)
+                return false;
             domain = res.getKey();
             problem = res.getRight();
             if (pddlPlus) {
@@ -159,6 +169,7 @@ public class ENHSP {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+        return true;
     }
 
     public void configurePlanner() {
@@ -273,7 +284,8 @@ public class ENHSP {
         options.addOption("silent",false,"Activate silent modality");
         options.addOption("autoanytime",false,"Activate auto anytime modality. ");
         options.addOption("uch",false,"Pretend all actions cost one in the heuristic");
-
+        options.addOption("npm",false,"PDDL+ feature: Do not print makespan in the plan");
+        options.addOption("pai",false,"Print all info before search");
         CommandLineParser parser = new DefaultParser();
         try {
             CommandLine cmd = parser.parse(options, args);
@@ -350,7 +362,6 @@ public class ENHSP {
             }
             
             inputPlan = cmd.getOptionValue("inputplan");
-            inputPlan = cmd.getOptionValue("inputplan");
 
             String k = cmd.getOptionValue("k");
             if (k != null) {
@@ -373,6 +384,7 @@ public class ENHSP {
             }
 
             sdac = cmd.hasOption("sdac");
+            printMakespan = !cmd.hasOption("npm");
             helpfulActions = cmd.getOptionValue("ha") != null && "true".equals(cmd.getOptionValue("ha"));
             autoAnytime = cmd.hasOption("autoanytime");
 
@@ -387,6 +399,7 @@ public class ENHSP {
             helpfulTransitions = cmd.getOptionValue("ht") != null && "true".equals(cmd.getOptionValue("ht"));
             ignoreMetric = cmd.hasOption("im");
             printActions = cmd.hasOption("print_actions");
+            printAllInfo = cmd.hasOption("pai");
         } catch (ParseException exp) {
 //            Logger.getLogger(ENHSP.class.getName()).log(Level.SEVERE, null, ex);
             System.err.println("Parsing failed.  Reason: " + exp.getMessage());
@@ -618,7 +631,8 @@ public class ENHSP {
         if (fileName != null) {
             try {
                 if (temporal){
-                    fileContent.add(par.time+": @PlanEND ");
+                    if (printMakespan)
+                        fileContent.add(par.time+": @PlanEND ");
                 }
                 Files.write(Path.of(fileName), fileContent);
 

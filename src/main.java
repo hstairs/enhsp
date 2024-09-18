@@ -27,7 +27,10 @@ public class main {
         ENHSP p = new ENHSP(false);
         p.parseInput(args);
         p.configurePlanner();
-        p.parsingDomainAndProblem(args);
-        p.planning();
+        if (p.parsingDomainAndProblem(args))
+            p.planning();
+        else{
+            System.out.println("Unsolvable Problem");
+        }
     }
 }

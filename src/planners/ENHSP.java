@@ -60,6 +60,8 @@ public class ENHSP {
     private String deltaExecution;
     private float depthLimit;
     private String savePlan;
+    private int linearEffectsAbstraction = -1;
+
     private boolean printTrace;
     private String tieBreaking;
     private String planner;
@@ -209,7 +211,7 @@ public class ENHSP {
                 LinkedList sp = search();
                 if (printTrace) {
                     String fileName = getProblem().getPddlFileReference() + "_search_" + searchEngineString + "_h_" + heuristic + "_break_ties_" + tieBreaking + ".npt";
-                    problem.validateRefactored(sp,new BigDecimal(this.deltaExecution), new BigDecimal(deltaExecution), fileName);
+                    problem.validate(sp,new BigDecimal(this.deltaExecution), new BigDecimal(deltaExecution), fileName);
                     System.out.println("Numeric Plan Trace saved to " + fileName);
                 }
                 if (sp == null) {
@@ -264,7 +266,7 @@ public class ENHSP {
         options.addOption("ht", "helpful-transitions", true, "activate up-to-macro actions");
         options.addOption("sp", true, "Save plan. Argument is filename");
         options.addOption("pt", false, "print state trajectory (Experimental)");
-//        options.addOption("im", false, "Ignore Metric in the heuristic");
+        options.addOption("im", false, "Ignore Metric in the heuristic");
         options.addOption("dap", false, "Disable Aibr Preprocessing");
         options.addOption("red", "redundant_constraints", true, "Choose mechanism for redundant constraints generation among, "
                 + "no, brute and smart. No redundant constraints generation is the default");
@@ -286,6 +288,8 @@ public class ENHSP {
         options.addOption("uch",false,"Pretend all actions cost one in the heuristic");
         options.addOption("npm",false,"PDDL+ feature: Do not print makespan in the plan");
         options.addOption("pai",false,"Print all info before search");
+        options.addOption("ea",true,"Effect abstraction mode for non-constants effects");
+
         CommandLineParser parser = new DefaultParser();
         try {
             CommandLine cmd = parser.parse(options, args);
@@ -323,7 +327,17 @@ public class ENHSP {
             } else {
                 groundingType = "internal";
             }
-            
+
+            String ea = cmd.getOptionValue("ea");
+            if (ea != null) {
+                if (ea.equals("all")){
+                    linearEffectsAbstraction = Integer.MAX_VALUE;
+                } else {
+                    linearEffectsAbstraction = Integer.parseInt(ea);
+                }
+            }
+
+
             internalValidation = cmd.hasOption("ival");
             this.unitCostHeuristic = cmd.hasOption("uch");
 
@@ -516,7 +530,7 @@ public class ENHSP {
     private void setHeuristic() {
 //        System.out.println("ha:" + helpfulActionsPruning + " ht" + helpfulTransitions);
         h = PDDLHeuristic.getHeuristic(heuristic, heuristicProblem, redundantConstraints, helpfulActions, helpfulTransitions,
-                unitCostHeuristic);
+                unitCostHeuristic, linearEffectsAbstraction);
     }
 
     private LinkedList<ImmutablePair<BigDecimal, TransitionGround>> search() throws Exception {

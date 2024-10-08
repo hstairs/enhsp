@@ -1,1 +1,4 @@
-Enrico Scala
+Main developer: Enrico Scala (enricos83@gmail.com)
+
+Other contributions from:
+Luigi Bonassi (luigi.bonassi@unibs.it) - Revived the use of abstraction with linear numeric effects (September 2024)

@@ -102,6 +102,7 @@ public class ENHSP {
     private boolean unitCostHeuristic;
     private boolean printAllInfo;
     private boolean printMakespan;
+    public static boolean aibrDebug = false;
 
     public ENHSP(boolean copyProblem) {
         copyOfTheProblem = copyProblem;
@@ -245,7 +246,8 @@ public class ENHSP {
                 + "hrmax, Hmax for Numeric Planning with redundant constraints\n"
                 + "hmrp, heuristic based on MRP extraction\n"
                 + "blcost, goal sensitive heuristic (1 to non goal-states, 0 to goal-states)\n"
-                + "blind, full blind heuristic (0 to all states)");
+                + "blind, full blind heuristic (0 to all states)"
+                + "ngc, Numeric Goal Counting Heuristic");
         options.addOption("s", true, "allows to select search strategy (default is WAStar):\n"
                 + "gbfs, Greedy Best First Search (f(n) = h(n))\n"
                 + "lazygbfs, Greedy Best First Search (f(n) = h(n)) with lazy evaluation\n"
@@ -288,7 +290,9 @@ public class ENHSP {
         options.addOption("uch",false,"Pretend all actions cost one in the heuristic");
         options.addOption("npm",false,"PDDL+ feature: Do not print makespan in the plan");
         options.addOption("pai",false,"Print all info before search");
-        options.addOption("ea",true,"Effect abstraction mode for non-constants effects");
+        options.addOption("ea",true,"Effect abstraction mode for non-constants effects. " +
+                "Takes integer as an argument, denoting the number of intervals to consider");
+        options.addOption("aibr_debug", false, "Enable AIBR debug logging");
 
         CommandLineParser parser = new DefaultParser();
         try {
@@ -414,6 +418,7 @@ public class ENHSP {
             ignoreMetric = cmd.hasOption("im");
             printActions = cmd.hasOption("print_actions");
             printAllInfo = cmd.hasOption("pai");
+            aibrDebug = cmd.hasOption("aibr-debug");
         } catch (ParseException exp) {
 //            Logger.getLogger(ENHSP.class.getName()).log(Level.SEVERE, null, ex);
             System.err.println("Parsing failed.  Reason: " + exp.getMessage());
@@ -530,7 +535,7 @@ public class ENHSP {
     private void setHeuristic() {
 //        System.out.println("ha:" + helpfulActionsPruning + " ht" + helpfulTransitions);
         h = PDDLHeuristic.getHeuristic(heuristic, heuristicProblem, redundantConstraints, helpfulActions, helpfulTransitions,
-                unitCostHeuristic, linearEffectsAbstraction);
+                unitCostHeuristic, linearEffectsAbstraction,aibrDebug );
     }
 
     private LinkedList<ImmutablePair<BigDecimal, TransitionGround>> search() throws Exception {

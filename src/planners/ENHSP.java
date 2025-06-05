@@ -103,6 +103,7 @@ public class ENHSP {
     private boolean printAllInfo;
     private boolean printMakespan;
     public static boolean aibrDebug = false;
+    private boolean pls;
 
     public ENHSP(boolean copyProblem) {
         copyOfTheProblem = copyProblem;
@@ -293,6 +294,7 @@ public class ENHSP {
         options.addOption("ea",true,"Effect abstraction mode for non-constants effects. " +
                 "Takes integer as an argument, denoting the number of intervals to consider");
         options.addOption("aibr_debug", false, "Enable AIBR debug logging");
+        options.addOption("pls", false, "Print the very last state");
 
         CommandLineParser parser = new DefaultParser();
         try {
@@ -332,6 +334,7 @@ public class ENHSP {
                 groundingType = "internal";
             }
 
+            pls = cmd.hasOption("pls");
             String ea = cmd.getOptionValue("ea");
             if (ea != null) {
                 if (ea.equals("all")){
@@ -541,7 +544,6 @@ public class ENHSP {
     private LinkedList<ImmutablePair<BigDecimal, TransitionGround>> search() throws Exception {
 
         PDDLPlanner planner = new PDDLPlanner(searchEngineString,
-                heuristic,
                 redundantConstraints,
                 helpfulActions,
                 helpfulTransitions,
@@ -571,18 +573,18 @@ public class ENHSP {
         return plan.rawPlan();
     }
 
-    private void printInfo(PDDLSolution plan, boolean pddlPlus, String savePlan, PDDLState s) {
+    private void printInfo(PDDLSolution plan, boolean pddlPlus, String savePlan, PDDLState lastState) {
         if (plan.rawPlan() != null) {
             System.out.println("Problem Solved\n");
             System.out.println("Found Plan:");
-            printPlan(plan.rawPlan(), pddlPlus, s, savePlan);
+            printPlan(plan.rawPlan(), pddlPlus, lastState, savePlan);
             System.out.println("\nPlan-Length:" + plan.rawPlan().size());
             planLength = plan.rawPlan().size();
         } else {
             System.out.println("Problem unsolvable");
         }
         if (pddlPlus && plan.rawPlan() != null) {
-            System.out.println("Elapsed Time: " + s.time);
+            System.out.println("Elapsed Time: " + lastState.time);
         }
         System.out.println("Metric (Search):" + plan.gValueAtTheEnd());
         System.out.println("Planning Time (msec): " + overallPlanningTime);
@@ -592,6 +594,9 @@ public class ENHSP {
         System.out.println("States Evaluated:" + plan.stats().nodesEvaluated());
         System.out.println("Number of Dead-Ends detected:" + plan.stats().deadEnds());
         System.out.println("Number of Duplicates detected:" + plan.stats().duplicates());
+        if (pls){
+            System.out.println(lastState);
+        }
 
     }
 

@@ -1,0 +1,17 @@
+(define (problem instance-sailing-simple)
+  (:domain sailing-simple)
+  (:objects)
+  (:init
+    (= (a) 0.0)
+    (= (v) 0.0)
+    (= (d) 0.0)
+    (= (time) 0.0)
+    (engine_stopped)
+  )
+  (:goal (and
+    (>= (d) 10.0)
+    (<= (time) 7.0)
+    (engine_stopped)
+  ))
+  (:metric minimize (time))
+)

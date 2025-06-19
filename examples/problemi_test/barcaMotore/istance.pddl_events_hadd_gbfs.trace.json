@@ -1,0 +1,935 @@
+{"events": [
+  {
+    "f": 10,
+    "g": 0,
+    "heuristicValue": 10,
+    "action": "init_state",
+    "diff": {
+      "(a)": {"to": "0.0"},
+      "(time)": {"to": "0"},
+      "(engine_stopped)": {"to": "true"},
+      "(v)": {"to": "0.0"},
+      "(engine_running)": {"to": "false"},
+      "(d)": {"to": "0.0"}
+    },
+    "id": 0,
+    "state": "(a)=0.0 (v)=0.0 (d)=0.0 (time)=0.0 (time)=0 \n(engine_running)=false (engine_stopped)=true ",
+    "type": "generate"
+  },
+  {
+    "f": 10,
+    "g": 0,
+    "heuristicValue": 10,
+    "id": 0,
+    "state": "(a)=0.0 (v)=0.0 (d)=0.0 (time)=0.0 (time)=0 \n(engine_running)=false (engine_stopped)=true ",
+    "type": "expand"
+  },
+  {
+    "f": 10,
+    "g": 0,
+    "heuristicValue": 10,
+    "action": "(start_car)",
+    "pId": 0,
+    "diff": {
+      "(engine_stopped)": {
+        "from": "true",
+        "to": "false"
+      },
+      "(engine_running)": {
+        "from": "false",
+        "to": "true"
+      }
+    },
+    "id": 1,
+    "state": "(a)=0.0 (v)=0.0 (d)=0.0 (time)=0.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 10,
+    "g": 0,
+    "heuristicValue": 10,
+    "id": 0,
+    "state": "(a)=0.0 (v)=0.0 (d)=0.0 (time)=0.0 (time)=0 \n(engine_running)=false (engine_stopped)=true ",
+    "type": "close"
+  },
+  {
+    "f": 10,
+    "g": 0,
+    "heuristicValue": 10,
+    "pId": 0,
+    "id": 1,
+    "state": "(a)=0.0 (v)=0.0 (d)=0.0 (time)=0.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "expand"
+  },
+  {
+    "f": 10,
+    "g": 1,
+    "heuristicValue": 10,
+    "action": "(step)",
+    "pId": 1,
+    "diff": {},
+    "id": 2,
+    "state": "(a)=0.0 (v)=0.0 (d)=0.0 (time)=1.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 10,
+    "g": 0,
+    "heuristicValue": 10,
+    "action": "(accelerate)",
+    "pId": 1,
+    "diff": {"(a)": {
+      "from": "0.0",
+      "to": "1.0"
+    }},
+    "id": 3,
+    "state": "(a)=1.0 (v)=0.0 (d)=0.0 (time)=0.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 10,
+    "g": 0,
+    "heuristicValue": 10,
+    "pId": 0,
+    "id": 1,
+    "state": "(a)=0.0 (v)=0.0 (d)=0.0 (time)=0.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "close"
+  },
+  {
+    "f": 10,
+    "g": 1,
+    "heuristicValue": 10,
+    "pId": 1,
+    "id": 2,
+    "state": "(a)=0.0 (v)=0.0 (d)=0.0 (time)=1.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "expand"
+  },
+  {
+    "f": 10,
+    "g": 2,
+    "heuristicValue": 10,
+    "action": "(step)",
+    "pId": 2,
+    "diff": {},
+    "id": 4,
+    "state": "(a)=0.0 (v)=0.0 (d)=0.0 (time)=2.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 10,
+    "g": 1,
+    "heuristicValue": 10,
+    "action": "(accelerate)",
+    "pId": 2,
+    "diff": {"(a)": {
+      "from": "0.0",
+      "to": "1.0"
+    }},
+    "id": 5,
+    "state": "(a)=1.0 (v)=0.0 (d)=0.0 (time)=1.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 10,
+    "g": 1,
+    "heuristicValue": 10,
+    "action": "(stop_car)",
+    "pId": 2,
+    "diff": {
+      "(engine_stopped)": {
+        "from": "false",
+        "to": "true"
+      },
+      "(engine_running)": {
+        "from": "true",
+        "to": "false"
+      }
+    },
+    "id": 6,
+    "state": "(a)=0.0 (v)=0.0 (d)=0.0 (time)=1.0 (time)=0 \n(engine_running)=false (engine_stopped)=true ",
+    "type": "generate"
+  },
+  {
+    "f": 10,
+    "g": 1,
+    "heuristicValue": 10,
+    "pId": 1,
+    "id": 2,
+    "state": "(a)=0.0 (v)=0.0 (d)=0.0 (time)=1.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "close"
+  },
+  {
+    "f": 10,
+    "g": 0,
+    "heuristicValue": 10,
+    "pId": 1,
+    "id": 3,
+    "state": "(a)=1.0 (v)=0.0 (d)=0.0 (time)=0.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "expand"
+  },
+  {
+    "f": 10,
+    "g": 1,
+    "heuristicValue": 10,
+    "action": "(step)",
+    "pId": 3,
+    "diff": {"(v)": {
+      "from": "0.0",
+      "to": "1.0"
+    }},
+    "id": 7,
+    "state": "(a)=1.0 (v)=1.0 (d)=0.0 (time)=1.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 10,
+    "g": 0,
+    "heuristicValue": 10,
+    "action": "(accelerate)",
+    "pId": 3,
+    "diff": {"(a)": {
+      "from": "1.0",
+      "to": "2.0"
+    }},
+    "id": 8,
+    "state": "(a)=2.0 (v)=0.0 (d)=0.0 (time)=0.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 10,
+    "g": 0,
+    "heuristicValue": 10,
+    "action": "(stop_car)",
+    "pId": 3,
+    "diff": {
+      "(engine_stopped)": {
+        "from": "false",
+        "to": "true"
+      },
+      "(engine_running)": {
+        "from": "true",
+        "to": "false"
+      }
+    },
+    "id": 9,
+    "state": "(a)=1.0 (v)=0.0 (d)=0.0 (time)=0.0 (time)=0 \n(engine_running)=false (engine_stopped)=true ",
+    "type": "generate"
+  },
+  {
+    "f": 10,
+    "g": 0,
+    "heuristicValue": 10,
+    "pId": 1,
+    "id": 3,
+    "state": "(a)=1.0 (v)=0.0 (d)=0.0 (time)=0.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "close"
+  },
+  {
+    "f": 10,
+    "g": 1,
+    "heuristicValue": 10,
+    "pId": 2,
+    "id": 6,
+    "state": "(a)=0.0 (v)=0.0 (d)=0.0 (time)=1.0 (time)=0 \n(engine_running)=false (engine_stopped)=true ",
+    "type": "expand"
+  },
+  {
+    "f": 10,
+    "g": 1,
+    "heuristicValue": 10,
+    "pId": 2,
+    "id": 6,
+    "state": "(a)=0.0 (v)=0.0 (d)=0.0 (time)=1.0 (time)=0 \n(engine_running)=false (engine_stopped)=true ",
+    "type": "close"
+  },
+  {
+    "f": 10,
+    "g": 0,
+    "heuristicValue": 10,
+    "pId": 3,
+    "id": 9,
+    "state": "(a)=1.0 (v)=0.0 (d)=0.0 (time)=0.0 (time)=0 \n(engine_running)=false (engine_stopped)=true ",
+    "type": "expand"
+  },
+  {
+    "f": 10,
+    "g": 0,
+    "heuristicValue": 10,
+    "pId": 3,
+    "id": 9,
+    "state": "(a)=1.0 (v)=0.0 (d)=0.0 (time)=0.0 (time)=0 \n(engine_running)=false (engine_stopped)=true ",
+    "type": "close"
+  },
+  {
+    "f": 10,
+    "g": 0,
+    "heuristicValue": 10,
+    "pId": 3,
+    "id": 8,
+    "state": "(a)=2.0 (v)=0.0 (d)=0.0 (time)=0.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "expand"
+  },
+  {
+    "f": 10,
+    "g": 1,
+    "heuristicValue": 10,
+    "action": "(step)",
+    "pId": 8,
+    "diff": {"(v)": {
+      "from": "0.0",
+      "to": "2.0"
+    }},
+    "id": 10,
+    "state": "(a)=2.0 (v)=2.0 (d)=0.0 (time)=1.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 10,
+    "g": 0,
+    "heuristicValue": 10,
+    "action": "(accelerate)",
+    "pId": 8,
+    "diff": {"(a)": {
+      "from": "2.0",
+      "to": "3.0"
+    }},
+    "id": 11,
+    "state": "(a)=3.0 (v)=0.0 (d)=0.0 (time)=0.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 10,
+    "g": 0,
+    "heuristicValue": 10,
+    "action": "(stop_car)",
+    "pId": 8,
+    "diff": {
+      "(engine_stopped)": {
+        "from": "false",
+        "to": "true"
+      },
+      "(engine_running)": {
+        "from": "true",
+        "to": "false"
+      }
+    },
+    "id": 12,
+    "state": "(a)=2.0 (v)=0.0 (d)=0.0 (time)=0.0 (time)=0 \n(engine_running)=false (engine_stopped)=true ",
+    "type": "generate"
+  },
+  {
+    "f": 10,
+    "g": 0,
+    "heuristicValue": 10,
+    "pId": 3,
+    "id": 8,
+    "state": "(a)=2.0 (v)=0.0 (d)=0.0 (time)=0.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "close"
+  },
+  {
+    "f": 10,
+    "g": 1,
+    "heuristicValue": 10,
+    "pId": 3,
+    "id": 7,
+    "state": "(a)=1.0 (v)=1.0 (d)=0.0 (time)=1.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "expand"
+  },
+  {
+    "f": 9,
+    "g": 2,
+    "heuristicValue": 9,
+    "action": "(step)",
+    "pId": 7,
+    "diff": {
+      "(v)": {
+        "from": "1.0",
+        "to": "2.0"
+      },
+      "(d)": {
+        "from": "0.0",
+        "to": "1.0"
+      }
+    },
+    "id": 13,
+    "state": "(a)=1.0 (v)=2.0 (d)=1.0 (time)=2.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 10,
+    "g": 1,
+    "heuristicValue": 10,
+    "action": "(accelerate)",
+    "pId": 7,
+    "diff": {"(a)": {
+      "from": "1.0",
+      "to": "2.0"
+    }},
+    "id": 14,
+    "state": "(a)=2.0 (v)=1.0 (d)=0.0 (time)=1.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 10,
+    "g": 1,
+    "heuristicValue": 10,
+    "action": "(stop_car)",
+    "pId": 7,
+    "diff": {
+      "(engine_stopped)": {
+        "from": "false",
+        "to": "true"
+      },
+      "(engine_running)": {
+        "from": "true",
+        "to": "false"
+      }
+    },
+    "id": 15,
+    "state": "(a)=1.0 (v)=1.0 (d)=0.0 (time)=1.0 (time)=0 \n(engine_running)=false (engine_stopped)=true ",
+    "type": "generate"
+  },
+  {
+    "f": 10,
+    "g": 1,
+    "heuristicValue": 10,
+    "action": "(decelerate)",
+    "pId": 7,
+    "diff": {"(a)": {
+      "from": "1.0",
+      "to": "0.0"
+    }},
+    "id": 16,
+    "state": "(a)=0.0 (v)=1.0 (d)=0.0 (time)=1.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 10,
+    "g": 1,
+    "heuristicValue": 10,
+    "pId": 3,
+    "id": 7,
+    "state": "(a)=1.0 (v)=1.0 (d)=0.0 (time)=1.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "close"
+  },
+  {
+    "f": 9,
+    "g": 2,
+    "heuristicValue": 9,
+    "pId": 7,
+    "id": 13,
+    "state": "(a)=1.0 (v)=2.0 (d)=1.0 (time)=2.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "expand"
+  },
+  {
+    "f": 7,
+    "g": 3,
+    "heuristicValue": 7,
+    "action": "(step)",
+    "pId": 13,
+    "diff": {
+      "(v)": {
+        "from": "2.0",
+        "to": "3.0"
+      },
+      "(d)": {
+        "from": "1.0",
+        "to": "3.0"
+      }
+    },
+    "id": 17,
+    "state": "(a)=1.0 (v)=3.0 (d)=3.0 (time)=3.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 9,
+    "g": 2,
+    "heuristicValue": 9,
+    "action": "(accelerate)",
+    "pId": 13,
+    "diff": {"(a)": {
+      "from": "1.0",
+      "to": "2.0"
+    }},
+    "id": 18,
+    "state": "(a)=2.0 (v)=2.0 (d)=1.0 (time)=2.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 9,
+    "g": 2,
+    "heuristicValue": 9,
+    "action": "(stop_car)",
+    "pId": 13,
+    "diff": {
+      "(engine_stopped)": {
+        "from": "false",
+        "to": "true"
+      },
+      "(engine_running)": {
+        "from": "true",
+        "to": "false"
+      }
+    },
+    "id": 19,
+    "state": "(a)=1.0 (v)=2.0 (d)=1.0 (time)=2.0 (time)=0 \n(engine_running)=false (engine_stopped)=true ",
+    "type": "generate"
+  },
+  {
+    "f": 9,
+    "g": 2,
+    "heuristicValue": 9,
+    "action": "(decelerate)",
+    "pId": 13,
+    "diff": {"(a)": {
+      "from": "1.0",
+      "to": "0.0"
+    }},
+    "id": 20,
+    "state": "(a)=0.0 (v)=2.0 (d)=1.0 (time)=2.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 9,
+    "g": 2,
+    "heuristicValue": 9,
+    "pId": 7,
+    "id": 13,
+    "state": "(a)=1.0 (v)=2.0 (d)=1.0 (time)=2.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "close"
+  },
+  {
+    "f": 7,
+    "g": 3,
+    "heuristicValue": 7,
+    "pId": 13,
+    "id": 17,
+    "state": "(a)=1.0 (v)=3.0 (d)=3.0 (time)=3.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "expand"
+  },
+  {
+    "f": 4,
+    "g": 4,
+    "heuristicValue": 4,
+    "action": "(step)",
+    "pId": 17,
+    "diff": {
+      "(v)": {
+        "from": "3.0",
+        "to": "4.0"
+      },
+      "(d)": {
+        "from": "3.0",
+        "to": "6.0"
+      }
+    },
+    "id": 21,
+    "state": "(a)=1.0 (v)=4.0 (d)=6.0 (time)=4.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 7,
+    "g": 3,
+    "heuristicValue": 7,
+    "action": "(accelerate)",
+    "pId": 17,
+    "diff": {"(a)": {
+      "from": "1.0",
+      "to": "2.0"
+    }},
+    "id": 22,
+    "state": "(a)=2.0 (v)=3.0 (d)=3.0 (time)=3.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 7,
+    "g": 3,
+    "heuristicValue": 7,
+    "action": "(stop_car)",
+    "pId": 17,
+    "diff": {
+      "(engine_stopped)": {
+        "from": "false",
+        "to": "true"
+      },
+      "(engine_running)": {
+        "from": "true",
+        "to": "false"
+      }
+    },
+    "id": 23,
+    "state": "(a)=1.0 (v)=3.0 (d)=3.0 (time)=3.0 (time)=0 \n(engine_running)=false (engine_stopped)=true ",
+    "type": "generate"
+  },
+  {
+    "f": 7,
+    "g": 3,
+    "heuristicValue": 7,
+    "action": "(decelerate)",
+    "pId": 17,
+    "diff": {"(a)": {
+      "from": "1.0",
+      "to": "0.0"
+    }},
+    "id": 24,
+    "state": "(a)=0.0 (v)=3.0 (d)=3.0 (time)=3.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 7,
+    "g": 3,
+    "heuristicValue": 7,
+    "pId": 13,
+    "id": 17,
+    "state": "(a)=1.0 (v)=3.0 (d)=3.0 (time)=3.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "close"
+  },
+  {
+    "f": 4,
+    "g": 4,
+    "heuristicValue": 4,
+    "pId": 17,
+    "id": 21,
+    "state": "(a)=1.0 (v)=4.0 (d)=6.0 (time)=4.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "expand"
+  },
+  {
+    "f": 0,
+    "g": 5,
+    "heuristicValue": 0,
+    "action": "(step)",
+    "pId": 21,
+    "diff": {
+      "(v)": {
+        "from": "4.0",
+        "to": "5.0"
+      },
+      "(d)": {
+        "from": "6.0",
+        "to": "10.0"
+      }
+    },
+    "id": 25,
+    "state": "(a)=1.0 (v)=5.0 (d)=10.0 (time)=5.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 4,
+    "g": 4,
+    "heuristicValue": 4,
+    "action": "(accelerate)",
+    "pId": 21,
+    "diff": {"(a)": {
+      "from": "1.0",
+      "to": "2.0"
+    }},
+    "id": 26,
+    "state": "(a)=2.0 (v)=4.0 (d)=6.0 (time)=4.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 4,
+    "g": 4,
+    "heuristicValue": 4,
+    "action": "(stop_car)",
+    "pId": 21,
+    "diff": {
+      "(engine_stopped)": {
+        "from": "false",
+        "to": "true"
+      },
+      "(engine_running)": {
+        "from": "true",
+        "to": "false"
+      }
+    },
+    "id": 27,
+    "state": "(a)=1.0 (v)=4.0 (d)=6.0 (time)=4.0 (time)=0 \n(engine_running)=false (engine_stopped)=true ",
+    "type": "generate"
+  },
+  {
+    "f": 4,
+    "g": 4,
+    "heuristicValue": 4,
+    "action": "(decelerate)",
+    "pId": 21,
+    "diff": {"(a)": {
+      "from": "1.0",
+      "to": "0.0"
+    }},
+    "id": 28,
+    "state": "(a)=0.0 (v)=4.0 (d)=6.0 (time)=4.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 4,
+    "g": 4,
+    "heuristicValue": 4,
+    "pId": 17,
+    "id": 21,
+    "state": "(a)=1.0 (v)=4.0 (d)=6.0 (time)=4.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "close"
+  },
+  {
+    "f": 0,
+    "g": 5,
+    "heuristicValue": 0,
+    "pId": 21,
+    "id": 25,
+    "state": "(a)=1.0 (v)=5.0 (d)=10.0 (time)=5.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "expand"
+  },
+  {
+    "f": 0,
+    "g": 6,
+    "heuristicValue": 0,
+    "action": "(step)",
+    "pId": 25,
+    "diff": {
+      "(v)": {
+        "from": "5.0",
+        "to": "6.0"
+      },
+      "(d)": {
+        "from": "10.0",
+        "to": "15.0"
+      }
+    },
+    "id": 29,
+    "state": "(a)=1.0 (v)=6.0 (d)=15.0 (time)=6.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 0,
+    "g": 5,
+    "heuristicValue": 0,
+    "action": "(accelerate)",
+    "pId": 25,
+    "diff": {"(a)": {
+      "from": "1.0",
+      "to": "2.0"
+    }},
+    "id": 30,
+    "state": "(a)=2.0 (v)=5.0 (d)=10.0 (time)=5.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 0,
+    "g": 5,
+    "heuristicValue": 0,
+    "action": "(stop_car)",
+    "pId": 25,
+    "diff": {
+      "(engine_stopped)": {
+        "from": "false",
+        "to": "true"
+      },
+      "(engine_running)": {
+        "from": "true",
+        "to": "false"
+      }
+    },
+    "id": 31,
+    "state": "(a)=1.0 (v)=5.0 (d)=10.0 (time)=5.0 (time)=0 \n(engine_running)=false (engine_stopped)=true ",
+    "type": "generate"
+  },
+  {
+    "f": 0,
+    "g": 5,
+    "heuristicValue": 0,
+    "action": "(decelerate)",
+    "pId": 25,
+    "diff": {"(a)": {
+      "from": "1.0",
+      "to": "0.0"
+    }},
+    "id": 32,
+    "state": "(a)=0.0 (v)=5.0 (d)=10.0 (time)=5.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 0,
+    "g": 5,
+    "heuristicValue": 0,
+    "pId": 21,
+    "id": 25,
+    "state": "(a)=1.0 (v)=5.0 (d)=10.0 (time)=5.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "close"
+  },
+  {
+    "f": 0,
+    "g": 6,
+    "heuristicValue": 0,
+    "pId": 25,
+    "id": 29,
+    "state": "(a)=1.0 (v)=6.0 (d)=15.0 (time)=6.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "expand"
+  },
+  {
+    "f": 0,
+    "g": 7,
+    "heuristicValue": 0,
+    "action": "(step)",
+    "pId": 29,
+    "diff": {
+      "(v)": {
+        "from": "6.0",
+        "to": "7.0"
+      },
+      "(d)": {
+        "from": "15.0",
+        "to": "21.0"
+      }
+    },
+    "id": 33,
+    "state": "(a)=1.0 (v)=7.0 (d)=21.0 (time)=7.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 0,
+    "g": 6,
+    "heuristicValue": 0,
+    "action": "(accelerate)",
+    "pId": 29,
+    "diff": {"(a)": {
+      "from": "1.0",
+      "to": "2.0"
+    }},
+    "id": 34,
+    "state": "(a)=2.0 (v)=6.0 (d)=15.0 (time)=6.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 0,
+    "g": 6,
+    "heuristicValue": 0,
+    "action": "(stop_car)",
+    "pId": 29,
+    "diff": {
+      "(engine_stopped)": {
+        "from": "false",
+        "to": "true"
+      },
+      "(engine_running)": {
+        "from": "true",
+        "to": "false"
+      }
+    },
+    "id": 35,
+    "state": "(a)=1.0 (v)=6.0 (d)=15.0 (time)=6.0 (time)=0 \n(engine_running)=false (engine_stopped)=true ",
+    "type": "generate"
+  },
+  {
+    "f": 0,
+    "g": 6,
+    "heuristicValue": 0,
+    "action": "(decelerate)",
+    "pId": 29,
+    "diff": {"(a)": {
+      "from": "1.0",
+      "to": "0.0"
+    }},
+    "id": 36,
+    "state": "(a)=0.0 (v)=6.0 (d)=15.0 (time)=6.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 0,
+    "g": 6,
+    "heuristicValue": 0,
+    "pId": 25,
+    "id": 29,
+    "state": "(a)=1.0 (v)=6.0 (d)=15.0 (time)=6.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "close"
+  },
+  {
+    "f": 0,
+    "g": 5,
+    "heuristicValue": 0,
+    "pId": 25,
+    "id": 30,
+    "state": "(a)=2.0 (v)=5.0 (d)=10.0 (time)=5.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "expand"
+  },
+  {
+    "f": 0,
+    "g": 6,
+    "heuristicValue": 0,
+    "action": "(step)",
+    "pId": 30,
+    "diff": {
+      "(v)": {
+        "from": "5.0",
+        "to": "7.0"
+      },
+      "(d)": {
+        "from": "10.0",
+        "to": "15.0"
+      }
+    },
+    "id": 37,
+    "state": "(a)=2.0 (v)=7.0 (d)=15.0 (time)=6.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 0,
+    "g": 5,
+    "heuristicValue": 0,
+    "action": "(accelerate)",
+    "pId": 30,
+    "diff": {"(a)": {
+      "from": "2.0",
+      "to": "3.0"
+    }},
+    "id": 38,
+    "state": "(a)=3.0 (v)=5.0 (d)=10.0 (time)=5.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 0,
+    "g": 5,
+    "heuristicValue": 0,
+    "action": "(stop_car)",
+    "pId": 30,
+    "diff": {
+      "(engine_stopped)": {
+        "from": "false",
+        "to": "true"
+      },
+      "(engine_running)": {
+        "from": "true",
+        "to": "false"
+      }
+    },
+    "id": 39,
+    "state": "(a)=2.0 (v)=5.0 (d)=10.0 (time)=5.0 (time)=0 \n(engine_running)=false (engine_stopped)=true ",
+    "type": "generate"
+  },
+  {
+    "f": 0,
+    "g": 5,
+    "heuristicValue": 0,
+    "pId": 25,
+    "id": 30,
+    "state": "(a)=2.0 (v)=5.0 (d)=10.0 (time)=5.0 (time)=0 \n(engine_running)=true (engine_stopped)=false ",
+    "type": "close"
+  },
+  {
+    "f": 0,
+    "g": 5,
+    "heuristicValue": 0,
+    "pId": 25,
+    "id": 31,
+    "state": "(a)=1.0 (v)=5.0 (d)=10.0 (time)=5.0 (time)=0 \n(engine_running)=false (engine_stopped)=true ",
+    "type": "expand"
+  },
+  {
+    "f": 0,
+    "g": 5,
+    "heuristicValue": 0,
+    "pId": 25,
+    "id": 31,
+    "state": "(a)=1.0 (v)=5.0 (d)=10.0 (time)=5.0 (time)=0 \n(engine_running)=false (engine_stopped)=true ",
+    "type": "close"
+  }
+]}

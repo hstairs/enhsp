@@ -1,4 +1,7 @@
 import planners.ENHSP;
+import com.hstairs.ppmajal.search.searchnodes.PosthocClient;
+import java.net.URI;
+
 /* 
  * Copyright (C) 2015-2017, Enrico Scala, contact: enricos83@gmail.com
  *
@@ -22,6 +25,8 @@ import planners.ENHSP;
 public class main {
 
     public static void main(String[] args) throws Exception {
+        // Inizializza il client WebSocket e connettilo (modifica la URI secondo il tuo server)
+        
         ENHSP p = new ENHSP(false);
         p.parseInput(args);
         p.configurePlanner();

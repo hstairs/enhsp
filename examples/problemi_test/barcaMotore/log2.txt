@@ -1,0 +1,343 @@
+(base) sarab@MacBook-Pro-di-sara enhsp % java -jar enhsp.jar -o examples/barcaMotore/domain_test.pddl -f examples/barcaMotore/istance.pddl -h blind -s WAStar -sjr -sje
+Domain parsed
+Problem parsed
+Grounding..
+Grounding Time: 22
+Aibr Preprocessing
+UFX:false
+|F|:2
+|X|:4
+|A|:5
+|P|:0
+|E|:0
+websocketPostHoc: false
+Motore di ricerca selezionato: wastar
+Problem Solved
+
+Found Plan:
+0.0: (start_car)
+1.0: (accelerate)
+2.0: (accelerate)
+3.0: (accelerate)
+4.0: (accelerate)
+5.0: (accelerate)
+6.0: (accelerate)
+7.0: (accelerate)
+8.0: (accelerate)
+9.0: (accelerate)
+10.0: (accelerate)
+11.0: (step)
+12.0: (decelerate)
+13.0: (step)
+14.0: (decelerate)
+15.0: (decelerate)
+16.0: (decelerate)
+17.0: (stop_car)
+
+Plan-Length:18
+Metric (Search):2.0
+Planning Time (msec): 308
+Heuristic Time (msec): 2
+Search Time (msec): 284
+Expanded Nodes:335
+States Evaluated:1
+Number of Dead-Ends detected:0
+Number of Duplicates detected:0
+Successfully Copied JSON Object to File...
+Successfully Copied JSON Events to File...
+(base) sarab@MacBook-Pro-di-sara enhsp % java -jar enhsp.jar -o examples/barcaMotore/domain_test.pddl -f examples/barcaMotore/istance.pddl -h hmax -s WAStar -sjr -sje 
+Domain parsed
+Problem parsed
+Grounding..
+Grounding Time: 23
+Aibr Preprocessing
+UFX:false
+|F|:2
+|X|:4
+|A|:5
+|P|:0
+|E|:0
+Numeric Error for Complex Condition Activated
+H1 Setup Time (msec): 28
+websocketPostHoc: false
+Motore di ricerca selezionato: wastar
+Problem Solved
+
+Found Plan:
+0.0: (start_car)
+1.0: (accelerate)
+2.0: (accelerate)
+3.0: (accelerate)
+4.0: (accelerate)
+5.0: (accelerate)
+6.0: (accelerate)
+7.0: (accelerate)
+8.0: (accelerate)
+9.0: (accelerate)
+10.0: (accelerate)
+11.0: (step)
+12.0: (step)
+13.0: (stop_car)
+
+Plan-Length:14
+Metric (Search):2.0
+Planning Time (msec): 365
+Heuristic Time (msec): 43
+Search Time (msec): 345
+Expanded Nodes:364
+States Evaluated:1
+Number of Dead-Ends detected:0
+Number of Duplicates detected:0
+Successfully Copied JSON Object to File...
+Successfully Copied JSON Events to File...
+(base) sarab@MacBook-Pro-di-sara enhsp % java -jar enhsp.jar -o examples/barcaMotore/domain_test.pddl -f examples/barcaMotore/istance.pddl -h hmax -s WAStar -sjr -sje
+Domain parsed
+Problem parsed
+Grounding..
+Grounding Time: 23
+Aibr Preprocessing
+UFX:false
+|F|:2
+|X|:4
+|A|:5
+|P|:0
+|E|:0
+Numeric Error for Complex Condition Activated
+H1 Setup Time (msec): 29
+websocketPostHoc: false
+Motore di ricerca selezionato: wastar
+Problem Solved
+
+Found Plan:
+0.0: (start_car)
+1.0: (accelerate)
+2.0: (accelerate)
+3.0: (accelerate)
+4.0: (accelerate)
+5.0: (accelerate)
+6.0: (accelerate)
+7.0: (accelerate)
+8.0: (accelerate)
+9.0: (accelerate)
+10.0: (accelerate)
+11.0: (step)
+12.0: (step)
+13.0: (stop_car)
+
+Plan-Length:14
+Metric (Search):2.0
+Planning Time (msec): 338
+Heuristic Time (msec): 42
+Search Time (msec): 318
+Expanded Nodes:364
+States Evaluated:1
+Number of Dead-Ends detected:0
+Number of Duplicates detected:0
+Successfully Copied JSON Object to File...
+Successfully Copied JSON Events to File...
+(base) sarab@MacBook-Pro-di-sara enhsp % java -jar enhsp.jar -o examples/barcaMotore/domain_test.pddl -f examples/barcaMotore/istance.pddl -s WAStar -sjr -sje 
+Domain parsed
+Problem parsed
+Grounding..
+Grounding Time: 22
+Aibr Preprocessing
+UFX:false
+|F|:2
+|X|:4
+|A|:5
+|P|:0
+|E|:0
+Numeric Error for Complex Condition Activated
+H1 Setup Time (msec): 24
+websocketPostHoc: false
+Motore di ricerca selezionato: wastar
+Problem Solved
+
+Found Plan:
+0.0: (start_car)
+1.0: (accelerate)
+2.0: (accelerate)
+3.0: (accelerate)
+4.0: (accelerate)
+5.0: (accelerate)
+6.0: (accelerate)
+7.0: (accelerate)
+8.0: (accelerate)
+9.0: (accelerate)
+10.0: (accelerate)
+11.0: (step)
+12.0: (step)
+13.0: (stop_car)
+
+Plan-Length:14
+Metric (Search):2.0
+Planning Time (msec): 77
+Heuristic Time (msec): 8
+Search Time (msec): 65
+Expanded Nodes:25
+States Evaluated:1
+Number of Dead-Ends detected:0
+Number of Duplicates detected:0
+Successfully Copied JSON Object to File...
+Successfully Copied JSON Events to File...
+(base) sarab@MacBook-Pro-di-sara enhsp % java -jar enhsp.jar -o examples/barcaMotore/domain_test.pddl -f examples/barcaMotore/istance.pddl -sjr -sje  
+Domain parsed
+Problem parsed
+Grounding..
+Grounding Time: 22
+Aibr Preprocessing
+UFX:false
+|F|:2
+|X|:4
+|A|:5
+|P|:0
+|E|:0
+Numeric Error for Complex Condition Activated
+H1 Setup Time (msec): 27
+websocketPostHoc: false
+Motore di ricerca selezionato: gbfs
+Problem Solved
+
+Found Plan:
+0.0: (start_car)
+1.0: (accelerate)
+2.0: (step)
+3.0: (step)
+4.0: (step)
+5.0: (step)
+6.0: (step)
+7.0: (stop_car)
+
+Plan-Length:8
+Metric (Search):5.0
+Planning Time (msec): 71
+Heuristic Time (msec): 6
+Search Time (msec): 63
+Expanded Nodes:15
+States Evaluated:1
+Number of Dead-Ends detected:0
+Number of Duplicates detected:0
+Successfully Copied JSON Object to File...
+Successfully Copied JSON Events to File...
+(base) sarab@MacBook-Pro-di-sara enhsp % java -jar enhsp.jar -o examples/barcaMotore/domain_test.pddl -f examples/barcaMotore/istance.pddl -h blind -sjr -sje
+Domain parsed
+Problem parsed
+Grounding..
+Grounding Time: 21
+Aibr Preprocessing
+UFX:false
+|F|:2
+|X|:4
+|A|:5
+|P|:0
+|E|:0
+websocketPostHoc: false
+Motore di ricerca selezionato: gbfs
+Problem Solved
+
+Found Plan:
+0.0: (start_car)
+1.0: (accelerate)
+2.0: (step)
+3.0: (accelerate)
+4.0: (step)
+5.0: (decelerate)
+6.0: (step)
+7.0: (accelerate)
+8.0: (step)
+9.0: (decelerate)
+10.0: (decelerate)
+11.0: (step)
+12.0: (stop_car)
+
+Plan-Length:13
+Metric (Search):5.0
+Planning Time (msec): 114
+Heuristic Time (msec): 0
+Search Time (msec): 99
+Expanded Nodes:45
+States Evaluated:1
+Number of Dead-Ends detected:0
+Number of Duplicates detected:0
+Successfully Copied JSON Object to File...
+Successfully Copied JSON Events to File...
+(base) sarab@MacBook-Pro-di-sara enhsp % java -jar enhsp.jar -o examples/barcaMotore/domain_test.pddl -f examples/barcaMotore/istance.pddl -h hmax -sjr -sje
+Domain parsed
+Problem parsed
+Grounding..
+Grounding Time: 23
+Aibr Preprocessing
+UFX:false
+|F|:2
+|X|:4
+|A|:5
+|P|:0
+|E|:0
+Numeric Error for Complex Condition Activated
+H1 Setup Time (msec): 26
+websocketPostHoc: false
+Motore di ricerca selezionato: gbfs
+Problem Solved
+
+Found Plan:
+0.0: (start_car)
+1.0: (accelerate)
+2.0: (step)
+3.0: (accelerate)
+4.0: (step)
+5.0: (accelerate)
+6.0: (step)
+7.0: (accelerate)
+8.0: (step)
+9.0: (stop_car)
+
+Plan-Length:10
+Metric (Search):4.0
+Planning Time (msec): 89
+Heuristic Time (msec): 10
+Search Time (msec): 78
+Expanded Nodes:34
+States Evaluated:1
+Number of Dead-Ends detected:0
+Number of Duplicates detected:0
+Successfully Copied JSON Object to File...
+Successfully Copied JSON Events to File...
+(base) sarab@MacBook-Pro-di-sara enhsp % java -jar enhsp.jar -o examples/barcaMotore/domain_test.pddl -f examples/barcaMotore/istance.pddl -sjr -sje  
+Domain parsed
+Problem parsed
+Grounding..
+Grounding Time: 20
+Aibr Preprocessing
+UFX:false
+|F|:2
+|X|:4
+|A|:5
+|P|:0
+|E|:0
+Numeric Error for Complex Condition Activated
+H1 Setup Time (msec): 29
+websocketPostHoc: false
+Motore di ricerca selezionato: gbfs
+Problem Solved
+
+Found Plan:
+0.0: (start_car)
+1.0: (accelerate)
+2.0: (step)
+3.0: (step)
+4.0: (step)
+5.0: (step)
+6.0: (step)
+7.0: (stop_car)
+
+Plan-Length:8
+Metric (Search):5.0
+Planning Time (msec): 71
+Heuristic Time (msec): 9
+Search Time (msec): 63
+Expanded Nodes:15
+States Evaluated:1
+Number of Dead-Ends detected:0
+Number of Duplicates detected:0
+Successfully Copied JSON Object to File...
+Successfully Copied JSON Events to File...

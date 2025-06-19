@@ -1,0 +1,471 @@
+(base) sarab@MacBook-Pro-di-sara enhsp % java -jar enhsp.jar -o examples/domain_counters.pddl -f examples/instance_counters.pddl -h hradd -sjr -sje 
+Domain parsed
+Problem parsed
+Grounding..
+Grounding Time: 31
+Aibr Preprocessing
+UFX:false
+|F|:0
+|X|:5
+|A|:4
+|P|:0
+|E|:0
+Numeric Error for Complex Condition Activated
+H1 Setup Time (msec): 42
+websocketPostHoc: false
+Motore di ricerca selezionato: gbfs
+Problem Solved
+
+Found Plan:
+0.0: (inc-c1)
+1.0: (inc-c1)
+2.0: (inc-c2)
+3.0: (inc-c1)
+4.0: (inc-c1)
+5.0: (inc-c2)
+6.0: (inc-c1)
+7.0: (inc-c2)
+8.0: (inc-c3)
+9.0: (inc-c1)
+10.0: (inc-c1)
+11.0: (inc-c1)
+12.0: (inc-c2)
+13.0: (assemble)
+14.0: (inc-c1)
+15.0: (inc-c1)
+16.0: (inc-c2)
+17.0: (inc-c1)
+18.0: (inc-c1)
+19.0: (inc-c2)
+20.0: (inc-c1)
+21.0: (inc-c2)
+22.0: (inc-c3)
+23.0: (assemble)
+
+Plan-Length:24
+Metric (Search):33.0
+Planning Time (msec): 439
+Heuristic Time (msec): 73
+Search Time (msec): 412
+Expanded Nodes:635
+States Evaluated:1
+Number of Dead-Ends detected:0
+Number of Duplicates detected:0
+Successfully Copied JSON Object to File...
+Successfully Copied JSON Events to File...
+(base) sarab@MacBook-Pro-di-sara enhsp % java -jar enhsp.jar -o examples/domain_counters.pddl -f examples/instance_counters.pddl -h hradd -s WAStar -sjr -sje 
+Domain parsed
+Problem parsed
+Grounding..
+Grounding Time: 31
+Aibr Preprocessing
+UFX:false
+|F|:0
+|X|:5
+|A|:4
+|P|:0
+|E|:0
+Numeric Error for Complex Condition Activated
+H1 Setup Time (msec): 33
+websocketPostHoc: false
+Motore di ricerca selezionato: wastar
+Problem Solved
+
+Found Plan:
+0.0: (inc-c1)
+1.0: (inc-c1)
+2.0: (inc-c2)
+3.0: (inc-c1)
+4.0: (inc-c1)
+5.0: (inc-c2)
+6.0: (inc-c1)
+7.0: (inc-c2)
+8.0: (inc-c3)
+9.0: (assemble)
+10.0: (inc-c1)
+11.0: (inc-c1)
+12.0: (inc-c2)
+13.0: (inc-c1)
+14.0: (inc-c1)
+15.0: (inc-c2)
+16.0: (inc-c1)
+17.0: (inc-c2)
+18.0: (inc-c3)
+19.0: (assemble)
+
+Plan-Length:20
+Metric (Search):28.0
+Planning Time (msec): 458
+Heuristic Time (msec): 81
+Search Time (msec): 435
+Expanded Nodes:590
+States Evaluated:1
+Number of Dead-Ends detected:0
+Number of Duplicates detected:0
+Successfully Copied JSON Object to File...
+Successfully Copied JSON Events to File...
+(base) sarab@MacBook-Pro-di-sara enhsp % java -jar enhsp.jar -o examples/domain_counters.pddl -f examples/instance_counters.pddl -s WAStar -sjr -sje  
+Domain parsed
+Problem parsed
+Grounding..
+Grounding Time: 28
+Aibr Preprocessing
+UFX:false
+|F|:0
+|X|:5
+|A|:4
+|P|:0
+|E|:0
+Numeric Error for Complex Condition Activated
+H1 Setup Time (msec): 34
+websocketPostHoc: false
+Motore di ricerca selezionato: wastar
+Problem Solved
+
+Found Plan:
+0.0: (inc-c1)
+1.0: (inc-c1)
+2.0: (inc-c2)
+3.0: (inc-c1)
+4.0: (inc-c1)
+5.0: (inc-c2)
+6.0: (inc-c1)
+7.0: (inc-c2)
+8.0: (inc-c3)
+9.0: (assemble)
+10.0: (inc-c1)
+11.0: (inc-c1)
+12.0: (inc-c2)
+13.0: (inc-c1)
+14.0: (inc-c1)
+15.0: (inc-c2)
+16.0: (inc-c1)
+17.0: (inc-c2)
+18.0: (inc-c3)
+19.0: (assemble)
+
+Plan-Length:20
+Metric (Search):28.0
+Planning Time (msec): 382
+Heuristic Time (msec): 75
+Search Time (msec): 358
+Expanded Nodes:319
+States Evaluated:1
+Number of Dead-Ends detected:0
+Number of Duplicates detected:0
+Successfully Copied JSON Object to File...
+Successfully Copied JSON Events to File...
+(base) sarab@MacBook-Pro-di-sara enhsp % java -jar enhsp.jar -o examples/domain_counters.pddl -f examples/instance_counters.pddl -sjr -sje  
+Domain parsed
+Problem parsed
+Grounding..
+Grounding Time: 29
+Aibr Preprocessing
+UFX:false
+|F|:0
+|X|:5
+|A|:4
+|P|:0
+|E|:0
+Numeric Error for Complex Condition Activated
+H1 Setup Time (msec): 40
+websocketPostHoc: false
+Motore di ricerca selezionato: gbfs
+Problem Solved
+
+Found Plan:
+0.0: (inc-c1)
+1.0: (inc-c2)
+2.0: (inc-c1)
+3.0: (inc-c1)
+4.0: (inc-c2)
+5.0: (inc-c1)
+6.0: (inc-c3)
+7.0: (inc-c2)
+8.0: (inc-c1)
+9.0: (inc-c1)
+10.0: (inc-c1)
+11.0: (assemble)
+12.0: (inc-c1)
+13.0: (inc-c2)
+14.0: (inc-c1)
+15.0: (inc-c1)
+16.0: (inc-c2)
+17.0: (inc-c1)
+18.0: (inc-c3)
+19.0: (inc-c2)
+20.0: (inc-c1)
+21.0: (assemble)
+
+Plan-Length:22
+Metric (Search):30.0
+Planning Time (msec): 469
+Heuristic Time (msec): 77
+Search Time (msec): 446
+Expanded Nodes:669
+States Evaluated:1
+Number of Dead-Ends detected:0
+Number of Duplicates detected:0
+Successfully Copied JSON Object to File...
+Successfully Copied JSON Events to File...
+
+(base) sarab@MacBook-Pro-di-sara enhsp % java -jar enhsp.jar -o examples/domain_counters.pddl -f examples/instance_counters.pddl -h hmax -sjr -sje 
+Domain parsed
+Problem parsed
+Grounding..
+Grounding Time: 28
+Aibr Preprocessing
+UFX:false
+|F|:0
+|X|:5
+|A|:4
+|P|:0
+|E|:0
+Numeric Error for Complex Condition Activated
+H1 Setup Time (msec): 31
+websocketPostHoc: false
+Motore di ricerca selezionato: gbfs
+Problem Solved
+
+Found Plan:
+0.0: (inc-c1)
+1.0: (inc-c2)
+2.0: (inc-c1)
+3.0: (inc-c2)
+4.0: (inc-c3)
+5.0: (inc-c1)
+6.0: (inc-c1)
+7.0: (inc-c2)
+8.0: (inc-c1)
+9.0: (inc-c1)
+10.0: (inc-c2)
+11.0: (inc-c3)
+12.0: (assemble)
+13.0: (inc-c1)
+14.0: (inc-c2)
+15.0: (inc-c1)
+16.0: (inc-c1)
+17.0: (inc-c2)
+18.0: (inc-c3)
+19.0: (inc-c1)
+20.0: (inc-c2)
+21.0: (inc-c1)
+22.0: (assemble)
+
+Plan-Length:23
+Metric (Search):34.0
+Planning Time (msec): 460
+Heuristic Time (msec): 71
+Search Time (msec): 437
+Expanded Nodes:623
+States Evaluated:1
+Number of Dead-Ends detected:0
+Number of Duplicates detected:0
+Successfully Copied JSON Object to File...
+Successfully Copied JSON Events to File...
+(base) sarab@MacBook-Pro-di-sara enhsp % java -jar enhsp.jar -o examples/domain_counters.pddl -f examples/instance_counters.pddl -h hmax -s WAStar -sjr -sje 
+Domain parsed
+Problem parsed
+Grounding..
+Grounding Time: 29
+Aibr Preprocessing
+UFX:false
+|F|:0
+|X|:5
+|A|:4
+|P|:0
+|E|:0
+Numeric Error for Complex Condition Activated
+H1 Setup Time (msec): 33
+websocketPostHoc: false
+Motore di ricerca selezionato: wastar
+Problem Solved
+
+Found Plan:
+0.0: (inc-c1)
+1.0: (inc-c2)
+2.0: (inc-c1)
+3.0: (inc-c1)
+4.0: (inc-c1)
+5.0: (inc-c1)
+6.0: (inc-c2)
+7.0: (inc-c3)
+8.0: (inc-c2)
+9.0: (assemble)
+10.0: (inc-c1)
+11.0: (inc-c2)
+12.0: (inc-c1)
+13.0: (inc-c1)
+14.0: (inc-c1)
+15.0: (inc-c1)
+16.0: (inc-c2)
+17.0: (inc-c2)
+18.0: (inc-c3)
+19.0: (assemble)
+
+Plan-Length:20
+Metric (Search):28.0
+Planning Time (msec): 401
+Heuristic Time (msec): 65
+Search Time (msec): 375
+Expanded Nodes:423
+States Evaluated:1
+Number of Dead-Ends detected:0
+Number of Duplicates detected:0
+Successfully Copied JSON Object to File...
+Successfully Copied JSON Events to File...
+(base) sarab@MacBook-Pro-di-sara enhsp % java -jar enhsp.jar -o examples/domain_counters.pddl -f examples/instance_counters.pddl -h blind -s WAStar -sjr -sje 
+Domain parsed
+Problem parsed
+Grounding..
+Grounding Time: 31
+Aibr Preprocessing
+UFX:false
+|F|:0
+|X|:5
+|A|:4
+|P|:0
+|E|:0
+websocketPostHoc: false
+Motore di ricerca selezionato: wastar
+Problem Solved
+
+Found Plan:
+0.0: (inc-c1)
+1.0: (inc-c1)
+2.0: (inc-c1)
+3.0: (inc-c1)
+4.0: (inc-c1)
+5.0: (inc-c2)
+6.0: (inc-c2)
+7.0: (inc-c2)
+8.0: (inc-c3)
+9.0: (assemble)
+10.0: (inc-c1)
+11.0: (inc-c1)
+12.0: (inc-c1)
+13.0: (inc-c1)
+14.0: (inc-c1)
+15.0: (inc-c2)
+16.0: (inc-c2)
+17.0: (inc-c2)
+18.0: (inc-c3)
+19.0: (assemble)
+
+Plan-Length:20
+Metric (Search):28.0
+Planning Time (msec): 412
+Heuristic Time (msec): 3
+Search Time (msec): 391
+Expanded Nodes:603
+States Evaluated:1
+Number of Dead-Ends detected:0
+Number of Duplicates detected:0
+Successfully Copied JSON Object to File...
+Successfully Copied JSON Events to File...
+
+(base) sarab@MacBook-Pro-di-sara enhsp % java -jar enhsp.jar -o examples/domain_counters.pddl -f examples/instance_counters.pddl -h hrmax -sjr -sje 
+Domain parsed
+Problem parsed
+Grounding..
+Grounding Time: 28
+Aibr Preprocessing
+UFX:false
+|F|:0
+|X|:5
+|A|:4
+|P|:0
+|E|:0
+Numeric Error for Complex Condition Activated
+H1 Setup Time (msec): 27
+websocketPostHoc: false
+Motore di ricerca selezionato: gbfs
+Problem Solved
+
+Found Plan:
+0.0: (inc-c1)
+1.0: (inc-c2)
+2.0: (inc-c1)
+3.0: (inc-c2)
+4.0: (inc-c1)
+5.0: (inc-c3)
+6.0: (inc-c1)
+7.0: (inc-c2)
+8.0: (inc-c1)
+9.0: (inc-c1)
+10.0: (inc-c2)
+11.0: (inc-c3)
+12.0: (assemble)
+13.0: (inc-c1)
+14.0: (inc-c2)
+15.0: (inc-c1)
+16.0: (inc-c2)
+17.0: (inc-c1)
+18.0: (inc-c3)
+19.0: (inc-c1)
+20.0: (inc-c2)
+21.0: (inc-c1)
+22.0: (assemble)
+
+Plan-Length:23
+Metric (Search):34.0
+Planning Time (msec): 436
+Heuristic Time (msec): 72
+Search Time (msec): 416
+Expanded Nodes:642
+States Evaluated:1
+Number of Dead-Ends detected:0
+Number of Duplicates detected:0
+Successfully Copied JSON Object to File...
+Successfully Copied JSON Events to File...
+(base) sarab@MacBook-Pro-di-sara enhsp % java -jar enhsp.jar -o examples/domain_counters.pddl -f examples/instance_counters.pddl -h hrmax -s WAStar -sjr -sje 
+Domain parsed
+Problem parsed
+Grounding..
+Grounding Time: 29
+Aibr Preprocessing
+UFX:false
+|F|:0
+|X|:5
+|A|:4
+|P|:0
+|E|:0
+Numeric Error for Complex Condition Activated
+H1 Setup Time (msec): 32
+websocketPostHoc: false
+Motore di ricerca selezionato: wastar
+Problem Solved
+
+Found Plan:
+0.0: (inc-c1)
+1.0: (inc-c1)
+2.0: (inc-c2)
+3.0: (inc-c1)
+4.0: (inc-c1)
+5.0: (inc-c1)
+6.0: (inc-c2)
+7.0: (inc-c3)
+8.0: (inc-c2)
+9.0: (assemble)
+10.0: (inc-c1)
+11.0: (inc-c1)
+12.0: (inc-c2)
+13.0: (inc-c1)
+14.0: (inc-c1)
+15.0: (inc-c2)
+16.0: (inc-c3)
+17.0: (inc-c2)
+18.0: (inc-c1)
+19.0: (assemble)
+
+Plan-Length:20
+Metric (Search):28.0
+Planning Time (msec): 387
+Heuristic Time (msec): 68
+Search Time (msec): 365
+Expanded Nodes:387
+States Evaluated:1
+Number of Dead-Ends detected:0
+Number of Duplicates detected:0
+Successfully Copied JSON Object to File...
+Successfully Copied JSON Events to File...

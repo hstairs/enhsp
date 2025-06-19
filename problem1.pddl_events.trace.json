@@ -1,0 +1,152 @@
+{"events": [
+  {
+    "f": 3,
+    "g": 0,
+    "heuristicValue": 3,
+    "id": 0,
+    "state": "(time)=0 \n(in oggetto1 stanza1)=true (robot-in robot1 stanza1)=true (preso robot1 oggetto1)=false (libero robot1)=true (in oggetto1 stanza2)=false (robot-in robot1 stanza2)=false ",
+    "type": "expand"
+  },
+  {
+    "f": 3,
+    "g": 1,
+    "heuristicValue": 3,
+    "action": "(muovi-robot robot1 stanza1 stanza2)",
+    "pId": 0,
+    "diff": {
+      "stanza1)": {
+        "from": "true",
+        "to": "false"
+      },
+      "stanza2)": {
+        "from": "false",
+        "to": "true"
+      }
+    },
+    "id": 1,
+    "state": "(time)=0 \n(in oggetto1 stanza1)=true (robot-in robot1 stanza1)=false (preso robot1 oggetto1)=false (libero robot1)=true (in oggetto1 stanza2)=false (robot-in robot1 stanza2)=true ",
+    "type": "generate"
+  },
+  {
+    "f": 2,
+    "g": 1,
+    "heuristicValue": 2,
+    "action": "(prendi robot1 oggetto1 stanza1)",
+    "pId": 0,
+    "diff": {
+      "oggetto1)": {
+        "from": "false",
+        "to": "true"
+      },
+      "robot1)": {
+        "from": "true",
+        "to": "false"
+      }
+    },
+    "id": 2,
+    "state": "(time)=0 \n(in oggetto1 stanza1)=false (robot-in robot1 stanza1)=true (preso robot1 oggetto1)=true (libero robot1)=false (in oggetto1 stanza2)=false (robot-in robot1 stanza2)=false ",
+    "type": "generate"
+  },
+  {
+    "f": 3,
+    "g": 0,
+    "heuristicValue": 3,
+    "id": 0,
+    "state": "(time)=0 \n(in oggetto1 stanza1)=true (robot-in robot1 stanza1)=true (preso robot1 oggetto1)=false (libero robot1)=true (in oggetto1 stanza2)=false (robot-in robot1 stanza2)=false ",
+    "type": "close"
+  },
+  {
+    "f": 2,
+    "g": 1,
+    "heuristicValue": 2,
+    "pId": 0,
+    "id": 2,
+    "state": "(time)=0 \n(in oggetto1 stanza1)=false (robot-in robot1 stanza1)=true (preso robot1 oggetto1)=true (libero robot1)=false (in oggetto1 stanza2)=false (robot-in robot1 stanza2)=false ",
+    "type": "expand"
+  },
+  {
+    "f": 1,
+    "g": 2,
+    "heuristicValue": 1,
+    "action": "(muovi-robot robot1 stanza1 stanza2)",
+    "pId": 2,
+    "diff": {
+      "stanza1)": {
+        "from": "true",
+        "to": "false"
+      },
+      "stanza2)": {
+        "from": "false",
+        "to": "true"
+      }
+    },
+    "id": 3,
+    "state": "(time)=0 \n(in oggetto1 stanza1)=false (robot-in robot1 stanza1)=false (preso robot1 oggetto1)=true (libero robot1)=false (in oggetto1 stanza2)=false (robot-in robot1 stanza2)=true ",
+    "type": "generate"
+  },
+  {
+    "f": 2,
+    "g": 1,
+    "heuristicValue": 2,
+    "pId": 0,
+    "id": 2,
+    "state": "(time)=0 \n(in oggetto1 stanza1)=false (robot-in robot1 stanza1)=true (preso robot1 oggetto1)=true (libero robot1)=false (in oggetto1 stanza2)=false (robot-in robot1 stanza2)=false ",
+    "type": "close"
+  },
+  {
+    "f": 1,
+    "g": 2,
+    "heuristicValue": 1,
+    "pId": 2,
+    "id": 3,
+    "state": "(time)=0 \n(in oggetto1 stanza1)=false (robot-in robot1 stanza1)=false (preso robot1 oggetto1)=true (libero robot1)=false (in oggetto1 stanza2)=false (robot-in robot1 stanza2)=true ",
+    "type": "expand"
+  },
+  {
+    "f": 0,
+    "g": 3,
+    "heuristicValue": 0,
+    "action": "(rilascia robot1 oggetto1 stanza2)",
+    "pId": 3,
+    "diff": {
+      "oggetto1)": {
+        "from": "true",
+        "to": "false"
+      },
+      "robot1)": {
+        "from": "false",
+        "to": "true"
+      }
+    },
+    "id": 4,
+    "state": "(time)=0 \n(in oggetto1 stanza1)=false (robot-in robot1 stanza1)=false (preso robot1 oggetto1)=false (libero robot1)=true (in oggetto1 stanza2)=true (robot-in robot1 stanza2)=true ",
+    "type": "generate"
+  },
+  {
+    "f": 1,
+    "g": 2,
+    "heuristicValue": 1,
+    "pId": 2,
+    "id": 3,
+    "state": "(time)=0 \n(in oggetto1 stanza1)=false (robot-in robot1 stanza1)=false (preso robot1 oggetto1)=true (libero robot1)=false (in oggetto1 stanza2)=false (robot-in robot1 stanza2)=true ",
+    "type": "close"
+  },
+  {
+    "f": 0,
+    "g": 3,
+    "heuristicValue": 0,
+    "pId": 3,
+    "id": 4,
+    "state": "(time)=0 \n(in oggetto1 stanza1)=false (robot-in robot1 stanza1)=false (preso robot1 oggetto1)=false (libero robot1)=true (in oggetto1 stanza2)=true (robot-in robot1 stanza2)=true ",
+    "type": "expand"
+  },
+  {
+    "f": 0,
+    "g": 3,
+    "heuristicValue": 0,
+    "pId": 3,
+    "id": 4,
+    "state": "(time)=0 \n(in oggetto1 stanza1)=false (robot-in robot1 stanza1)=false (preso robot1 oggetto1)=false (libero robot1)=true (in oggetto1 stanza2)=true (robot-in robot1 stanza2)=true ",
+    "type": "close"
+  }
+]}

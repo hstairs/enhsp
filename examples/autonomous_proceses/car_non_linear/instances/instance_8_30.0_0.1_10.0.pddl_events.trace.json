@@ -2,7 +2,7 @@
   {
     "f": 1,
     "g": 0,
-    "heuristicValue": 1,
+    "heuristicValue": 0,
     "action": "init_state",
     "diff": {
       "(a)": {"to": "0.0"},
@@ -19,7 +19,7 @@
   {
     "f": 1,
     "g": 0,
-    "heuristicValue": 1,
+    "heuristicValue": 0,
     "id": 0,
     "state": "(d)=0.0 (v)=0.0 (a)=0.0 (time)=0 \n(engine_running)=false (engine_stopped)=true ",
     "type": "expand"
@@ -47,7 +47,7 @@
   {
     "f": 1,
     "g": 0,
-    "heuristicValue": 1,
+    "heuristicValue": 0,
     "id": 0,
     "state": "(d)=0.0 (v)=0.0 (a)=0.0 (time)=0 \n(engine_running)=false (engine_stopped)=true ",
     "type": "close"

@@ -7,3 +7,4 @@ build.xml
 manifest.mf
 nbproject
 *~
+.DS_Store

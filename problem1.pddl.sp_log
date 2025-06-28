@@ -1,0 +1,65 @@
+
+
+{"distance":3.0,"visit_step":-1,
+  "distance": 3.0,
+  "visit_step": -1,
+  "ancestor": "init_state",
+  "visited": false,
+  "action": "init_state",
+  "action_cost_to_get_here": 0.0,
+  "state": "(time)=0 \n(in oggetto1 stanza1)=true 
+            (robot-in robot1 stanza1)=true 
+            (preso robot1 oggetto1)=false 
+            (libero robot1)=true 
+            (in oggetto1 stanza2)=false 
+            (robot-in robot1 stanza2)=false ",
+  "descendants": [
+    {
+      "distance": 3.0,
+      "visit_step": -1,
+      "ancestor": null,
+      "visited": false,
+      "action": "(muovi-robot robot1 stanza1 stanza2)",
+      "action_cost_to_get_here": 1.0,
+      "state": "(time)=0 \n(in oggetto1 stanza1)=true 
+                (robot-in robot1 stanza1)=false 
+                (preso robot1 oggetto1)=false 
+                (libero robot1)=true 
+                (in oggetto1 stanza2)=false 
+                (robot-in robot1 stanza2)=true ",
+      "descendants": []
+    },
+    {
+      "distance": 2.0,
+      "visit_step": -1,
+      "ancestor": null,
+      "visited": false,
+      "action": "(prendi robot1 oggetto1 stanza1)",
+      "action_cost_to_get_here": 1.0,
+      "state": "(time)=0 \n(in oggetto1 stanza1)=false (robot-in robot1 stanza1)=true (preso robot1 oggetto1)=true (libero robot1)=false (in oggetto1 stanza2)=false (robot-in robot1 stanza2)=false ",
+      "descendants": [
+        {
+          "distance": 1.0,
+          "visit_step": -1,
+          "ancestor": null,
+          "visited": false,
+          "action": "(muovi-robot robot1 stanza1 stanza2)",
+          "action_cost_to_get_here": 2.0,
+          "state": "(time)=0 \n(in oggetto1 stanza1)=false (robot-in robot1 stanza1)=false (preso robot1 oggetto1)=true (libero robot1)=false (in oggetto1 stanza2)=false (robot-in robot1 stanza2)=true ",
+          "descendants": [
+            {
+              "distance": 0.0,
+              "visit_step": -1,
+              "ancestor": null,
+              "visited": false,
+              "action": "(rilascia robot1 oggetto1 stanza2)",
+              "action_cost_to_get_here": 3.0,
+              "state": "(time)=0 \n(in oggetto1 stanza1)=false (robot-in robot1 stanza1)=false (preso robot1 oggetto1)=false (libero robot1)=true (in oggetto1 stanza2)=true (robot-in robot1 stanza2)=true ",
+              "descendants": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}stor":"init_state","visited":false,"action":"init_state","action_cost_to_get_here":0.0,"state":"(time)=0 \n(in oggetto1 stanza1)=true (robot-in robot1 stanza1)=true (preso robot1 oggetto1)=false (libero robot1)=true (in oggetto1 stanza2)=false (robot-in robot1 stanza2)=false ","descendants":[{"distance":3.0,"visit_step":-1,"ancestor":null,"visited":false,"action":"(muovi-robot robot1 stanza1 stanza2)","action_cost_to_get_here":1.0,"state":"(time)=0 \n(in oggetto1 stanza1)=true (robot-in robot1 stanza1)=false (preso robot1 oggetto1)=false (libero robot1)=true (in oggetto1 stanza2)=false (robot-in robot1 stanza2)=true ","descendants":[]},{"distance":2.0,"visit_step":-1,"ancestor":null,"visited":false,"action":"(prendi robot1 oggetto1 stanza1)","action_cost_to_get_here":1.0,"state":"(time)=0 \n(in oggetto1 stanza1)=false (robot-in robot1 stanza1)=true (preso robot1 oggetto1)=true (libero robot1)=false (in oggetto1 stanza2)=false (robot-in robot1 stanza2)=false ","descendants":[{"distance":1.0,"visit_step":-1,"ancestor":null,"visited":false,"action":"(muovi-robot robot1 stanza1 stanza2)","action_cost_to_get_here":2.0,"state":"(time)=0 \n(in oggetto1 stanza1)=false (robot-in robot1 stanza1)=false (preso robot1 oggetto1)=true (libero robot1)=false (in oggetto1 stanza2)=false (robot-in robot1 stanza2)=true ","descendants":[{"distance":0.0,"visit_step":-1,"ancestor":null,"visited":false,"action":"(rilascia robot1 oggetto1 stanza2)","action_cost_to_get_here":3.0,"state":"(time)=0 \n(in oggetto1 stanza1)=false (robot-in robot1 stanza1)=false (preso robot1 oggetto1)=false (libero robot1)=true (in oggetto1 stanza2)=true (robot-in robot1 stanza2)=true ","descendants":[]}]}]}]}

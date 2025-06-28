@@ -1,0 +1,13 @@
+(define (problem factory-instance-basic)
+  (:domain factory-counters)
+  (:objects)
+  (:init
+    (= (c1) 0)
+    (= (c2) 0)
+    (= (c3) 0)
+    (= (assembled) 0)
+    (= (operations) 0)
+  )
+  (:goal (and (>= (assembled) 2) (<= (operations) 35)))
+  (:metric minimize (operations))
+)

@@ -7,6 +7,7 @@ import com.hstairs.ppmajal.extraUtils.Utils;
 import com.hstairs.ppmajal.pddl.heuristics.PDDLHeuristic;
 import com.hstairs.ppmajal.search.SearchHeuristic;
 import com.hstairs.ppmajal.transition.TransitionGround;
+import com.hstairs.ppmajal.search.searchnodes.PosthocClient;
 import org.apache.commons.cli.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.math.BigDecimal;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -57,6 +59,7 @@ public class ENHSP {
     private String heuristic = "aibr";
     private String gw;
     private boolean savingSearchSpaceJson = false;
+    private boolean savingEventsJson = false;
     private String deltaExecution;
     private float depthLimit;
     private String savePlan;
@@ -105,6 +108,9 @@ public class ENHSP {
     public static boolean aibrDebug = false;
     private boolean pls;
 
+    private PosthocClient wsClient = null; // aggiungi questa variabile
+    private boolean websocketPostHoc = false; // aggiunta variabile per websocket posthoc
+
     public ENHSP(boolean copyProblem) {
         copyOfTheProblem = copyProblem;
     }
@@ -133,8 +139,6 @@ public class ENHSP {
             if (!localProblem.prepareForSearch(aibrPreprocessing, stopAfterGrounding)) {
                 return null;
             }
-
-
             
             if (printActions){
                 System.out.println(localProblem.getTransitions());
@@ -186,7 +190,6 @@ public class ENHSP {
     LinkedList<AnytimeConfigurations> conf = new LinkedList();
 
     public void planning() {
-
         try {
             printStats();
             setHeuristic();
@@ -263,6 +266,8 @@ public class ENHSP {
         options.addOption("epsilon", true, "epsilon separation: float");
         options.addOption("wh", true, "h-values weight: float");
         options.addOption("sjr", false, "save state space explored in json file");
+        options.addOption("sje", false, "save events in json file"); // To save json events
+
         options.addOption("ha", "helpful-actions", true, "activate helpful actions in the search");
         options.addOption("pe", "print-events-plan", false, "activate printing of events");
 
@@ -294,7 +299,9 @@ public class ENHSP {
         options.addOption("ea",true,"Effect abstraction mode for non-constants effects. " +
                 "Takes integer as an argument, denoting the number of intervals to consider");
         options.addOption("aibr_debug", false, "Enable AIBR debug logging");
+        options.addOption("wsp", false, "Abilita WebSocket PostHoc"); // aggiunta opzione wsp
         options.addOption("pls", false, "Print the very last state");
+
 
         CommandLineParser parser = new DefaultParser();
         try {
@@ -394,6 +401,7 @@ public class ENHSP {
             gw = cmd.getOptionValue("wg");
             wh = cmd.getOptionValue("wh");
             savingSearchSpaceJson = cmd.hasOption("sjr");
+            savingEventsJson = cmd.hasOption("sje");
             if (cmd.hasOption("silent")){
                 out = new PrintStream(new OutputStream() {
                     @Override
@@ -422,6 +430,7 @@ public class ENHSP {
             printActions = cmd.hasOption("print_actions");
             printAllInfo = cmd.hasOption("pai");
             aibrDebug = cmd.hasOption("aibr-debug");
+            websocketPostHoc = cmd.hasOption("wsp"); // setta la variabile websocketPostHoc
         } catch (ParseException exp) {
 //            Logger.getLogger(ENHSP.class.getName()).log(Level.SEVERE, null, ex);
             System.err.println("Parsing failed.  Reason: " + exp.getMessage());
@@ -542,33 +551,50 @@ public class ENHSP {
     }
 
     private LinkedList<ImmutablePair<BigDecimal, TransitionGround>> search() throws Exception {
+        String outputPrefix = problem.getPddlFileReference();
 
         PDDLPlanner planner = new PDDLPlanner(searchEngineString,
                 redundantConstraints,
                 helpfulActions,
                 helpfulTransitions,
-                wh != null ? Float.parseFloat(this.wh) : (float) 1.0,
-                deltaPlanning != null ? new BigDecimal(deltaPlanning) : new BigDecimal(1.0),
-                deltaExecution != null ? new BigDecimal(deltaExecution) : new BigDecimal(1.0),
-                tieBreaking == null ? "arbitrary": tieBreaking, savingSearchSpaceJson, depthLimit == -1 ? Float.POSITIVE_INFINITY : depthLimit
-                );
+                wh != null ? Float.parseFloat(this.wh) : 1.0f,
+                deltaPlanning != null ? new BigDecimal(String.valueOf(deltaPlanning)) : BigDecimal.ONE,
+                deltaExecution != null ? new BigDecimal(String.valueOf(deltaExecution)) : BigDecimal.ONE,
+                tieBreaking == null ? "arbitrary" : tieBreaking,
+                savingSearchSpaceJson,
+                depthLimit == -1 ? Float.POSITIVE_INFINITY : depthLimit,
+                savingEventsJson        
+        );
 
-        if (savingSearchSpaceJson) {
-            Runtime.getRuntime().addShutdownHook(new Thread() {//this is to save json also when the planner is interrupted
-                @Override
-                public void run() {
-                        planner.getSearchSpaceHandle().printJson(
-                                getProblem().getPddlFileReference() + ".sp_log");
-                }
-            });
+        System.out.println("websocketPostHoc: " + websocketPostHoc);
+        // Passa il wsClient al logger eventi, se presente, aggiungi booool hasOption
+        if (planner.getEventLogger() != null && websocketPostHoc) {
+            try {
+                System.out.println("Tentativo di connessione al WebSocket PostHoc...");
+                wsClient = new PosthocClient(new URI("ws://localhost:8080"));
+                wsClient.connectBlocking(); 
+            } catch (Exception e) {
+                System.err.println("WebSocket non disponibile: " + e.getMessage());
+                wsClient = null;
+            }
+            planner.getEventLogger().setWsClient(wsClient);
         }
+
         overallStart = System.currentTimeMillis();
         PDDLSolution plan = planner.plan(problem, h);
-        overallPlanningTime = (System.currentTimeMillis() - overallStart);
+        overallPlanningTime = System.currentTimeMillis() - overallStart;
         endGValue = plan.gValueAtTheEnd();
-        printInfo(plan,pddlPlus,savePlan,plan == null ? null : plan.lastState());
+
+        printInfo(plan, pddlPlus, savePlan, plan == null ? null : plan.lastState());
+
         if (savingSearchSpaceJson) {
-            planner.getSearchSpaceHandle().printJson(getProblem().getPddlFileReference() + ".sp_log");
+            if (planner.getSearchSpaceHandle() != null) {
+                planner.getSearchSpaceHandle().printJson(outputPrefix + ".sp_log");
+            }
+        }
+
+        if(savingEventsJson){  
+            planner.getEventLogger().writeEventsToFile(outputPrefix + "_events.trace.json");  
         }
         return plan.rawPlan();
     }
@@ -664,6 +690,11 @@ public class ENHSP {
                 Logger.getLogger(ENHSP.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+    }
+
+    // Metodo per impostare il client WebSocket dall'esterno
+    public void setWsClient(PosthocClient wsClient) {
+        this.wsClient = wsClient;
     }
 
 }

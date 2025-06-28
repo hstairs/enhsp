@@ -563,7 +563,7 @@ public class ENHSP {
                 tieBreaking == null ? "arbitrary" : tieBreaking,
                 savingSearchSpaceJson,
                 depthLimit == -1 ? Float.POSITIVE_INFINITY : depthLimit,
-                savingEventsJson         // abilita logging eventi
+                savingEventsJson        
         );
 
         System.out.println("websocketPostHoc: " + websocketPostHoc);

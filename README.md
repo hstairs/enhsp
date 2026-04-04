@@ -1,7 +1,8 @@
 
 **ENHSP is an active project, with continuous bug fixing and improvements, so things written into this README file can be at times outdated. 
-For a general overview of ENHSP and the different versions (ENHSP18, ENHSP-19, ENHSP-20), have a look at the ENHSP website: https://sites.google.com/view/enhsp/.
-If you want to use ENHSP for publishing experiments, please send me an [email](enricos83@gmail.com) so that I can give you the correct version.**
+For a general overview of ENHSP and the different versions have a look at the ENHSP website: https://sites.google.com/view/enhsp/.
+If you want to use ENHSP for publishing experiments, please send me an [email](enricos83@gmail.com) so that I can give you the correct version.
+As of the beginning of 2025, I am managing ENHSP directly into the jpddlplus library, which is hosted here: https://github.com/hstairs/jpddlplus. Please use the enhsp-25-backend branch to get the most 2025 version of ENHSP.**
 
 I tried to write an easy to read README. But it could be the case that this is not as easy to read as it is supposed to be. So please send me an email if you have any question (of any kind) on the planner. My email is enricos83 at gmail dot com.
 
